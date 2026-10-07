@@ -1,138 +1,320 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Расходы в Грузии</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Расходы Грузия</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 20px;
-      background: #f5f5f5;
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f5f6f8;
+    color: #222;
+}
+
+.container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.card {
+    background: white;
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.06);
+}
+
+label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 7px;
+}
+
+input[type="number"],
+input[type="date"],
+input[type="text"],
+select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+
+.pay-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.pay-buttons label {
+    margin: 0;
+    font-weight: normal;
+}
+
+.pay-buttons input {
+    display: none;
+}
+
+.pay-button {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    background: #fafafa;
+    font-size: 14px;
+}
+
+.pay-buttons input:checked + .pay-button {
+    background: #222;
+    color: white;
+    border-color: #222;
+}
+
+.people {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.person {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 10px;
+    cursor: pointer;
+    background: #fafafa;
+}
+
+.person input {
+    width: 18px;
+    height: 18px;
+}
+
+button {
+    width: 100%;
+    border: 0;
+    border-radius: 11px;
+    padding: 13px;
+    background: #222;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:disabled {
+    opacity: .6;
+}
+
+.message {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.summary {
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.debt {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.debt:last-child {
+    border-bottom: none;
+}
+
+.amount {
+    font-weight: bold;
+}
+
+.expense {
+    border-bottom: 1px solid #eee;
+    padding: 12px 0;
+}
+
+.expense:last-child {
+    border-bottom: none;
+}
+
+.expense-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.expense-desc {
+    font-weight: 600;
+}
+
+.expense-meta {
+    color: #777;
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+.empty {
+    text-align: center;
+    color: #777;
+    padding: 15px;
+}
+
+@media (max-width: 500px) {
+    .container {
+        padding: 12px;
     }
 
-    h1 {
-      margin-bottom: 20px;
+    .people {
+        grid-template-columns: 1fr;
     }
-
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      margin-bottom: 20px;
-    }
-
-    input, button {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 10px;
-      margin: 5px 0;
-      border: 1px solid #ddd;
-      border-radius: 7px;
-      font-size: 15px;
-    }
-
-    button {
-      background: #222;
-      color: white;
-      cursor: pointer;
-      border: none;
-      margin-top: 10px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    th, td {
-      padding: 9px;
-      border-bottom: 1px solid #eee;
-      text-align: left;
-    }
-
-    .message {
-      margin-top: 10px;
-      font-size: 14px;
-    }
-
-    .error {
-      color: #c00;
-    }
-
-    .success {
-      color: green;
-    }
-
-    .table-wrap {
-      overflow-x: auto;
-    }
-  </style>
+}
+</style>
 </head>
 
 <body>
 
-<h1>🇬🇪 Расходы в Грузии</h1>
+<div class="container">
 
-<div class="card">
+    <h1>💸 Расходы поездки</h1>
 
-  <h2>Добавить расход</h2>
+    <div class="card">
 
-  <input id="paid_by" placeholder="Кто заплатил">
+        <label>Кто заплатил</label>
 
-  <input id="amount" type="number" step="0.01" placeholder="Сумма">
+        <div class="pay-buttons">
 
-  <input id="currency" value="GEL" placeholder="Валюта">
+            <label>
+                <input type="radio" name="paidBy" value="Наиль и Лена">
+                <span class="pay-button">Наиль и Лена</span>
+            </label>
 
-  <input id="description" placeholder="За что заплатили">
+            <label>
+                <input type="radio" name="paidBy" value="Булат и Динара">
+                <span class="pay-button">Булат и Динара</span>
+            </label>
 
-  <input id="participants" placeholder="Участники">
+            <label>
+                <input type="radio" name="paidBy" value="Эмиль">
+                <span class="pay-button">Эмиль</span>
+            </label>
 
-  <input id="category" placeholder="Категория">
-
-  <input id="pair" placeholder="Пара">
-
-  <input id="date" type="date">
-
-  <button onclick="addExpense()">Добавить расход</button>
-
-  <div id="message" class="message"></div>
-
-</div>
+        </div>
 
 
-<div class="card">
+        <label for="amount">Сумма</label>
+        <input
+            id="amount"
+            type="number"
+            step="0.01"
+            min="0"
+            placeholder="Например, 50"
+        >
 
-  <h2>Все расходы</h2>
 
-  <div class="table-wrap">
+        <label for="currency">Валюта</label>
+        <select id="currency">
+            <option value="GEL">₾ Лари</option>
+            <option value="RUB">₽ Рубли</option>
+            <option value="USD">$ Доллары</option>
+        </select>
 
-    <table>
 
-      <thead>
-        <tr>
-          <th>Кто</th>
-          <th>Сумма</th>
-          <th>За что</th>
-          <th>Участники</th>
-          <th>Дата</th>
-        </tr>
-      </thead>
+        <label for="date">Дата</label>
+        <input id="date" type="date">
 
-      <tbody id="expenses">
-        <tr>
-          <td colspan="5">Загрузка...</td>
-        </tr>
-      </tbody>
 
-    </table>
+        <label for="description">Что купили</label>
+        <input
+            id="description"
+            type="text"
+            placeholder="Например, ужин"
+        >
 
-  </div>
+
+        <label>За кого</label>
+
+        <div class="people">
+
+            <label class="person">
+                <input type="checkbox" value="Наиль" class="participant">
+                <span>Наиль</span>
+            </label>
+
+            <label class="person">
+                <input type="checkbox" value="Лена" class="participant">
+                <span>Лена</span>
+            </label>
+
+            <label class="person">
+                <input type="checkbox" value="Булат" class="participant">
+                <span>Булат</span>
+            </label>
+
+            <label class="person">
+                <input type="checkbox" value="Динара" class="participant">
+                <span>Динара</span>
+            </label>
+
+            <label class="person">
+                <input type="checkbox" value="Эмиль" class="participant">
+                <span>Эмиль</span>
+            </label>
+
+        </div>
+
+
+        <button id="addButton" onclick="addExpense()">
+            Добавить расход
+        </button>
+
+        <div id="message" class="message"></div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>💰 Кто кому должен</h2>
+
+        <div id="debts" class="summary">
+            Загружаю...
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>📋 История расходов</h2>
+
+        <div id="expenses">
+            Загружаю...
+        </div>
+
+    </div>
 
 </div>
 
@@ -140,160 +322,547 @@
 <script>
 
 const SUPABASE_URL =
-  "https://xhwypifggndzxlwcbpbu.supabase.co";
+    "https://xhwypifggndzxlwcbpbu.supabase.co";
 
 const SUPABASE_KEY =
-  "sb_publishable_ju2MdqK7EbSlOCgEbuUl_g_Y1Wl_sS0";
+    "sb_publishable_ju2MdqK7EbSlOCgEbuUl_g_Y1Wl_sS0";
 
-const db = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-);
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+
+const people = [
+    "Наиль",
+    "Лена",
+    "Булат",
+    "Динара",
+    "Эмиль"
+];
+
+
+function getPair(person) {
+
+    if (person === "Наиль" || person === "Лена") {
+        return "Наиль и Лена";
+    }
+
+    if (person === "Булат" || person === "Динара") {
+        return "Булат и Динара";
+    }
+
+    return "Эмиль";
+}
+
+
+function normalizeParticipants(list) {
+
+    const result = [];
+
+    for (const person of list) {
+
+        const pair = getPair(person);
+
+        if (!result.includes(pair)) {
+            result.push(pair);
+        }
+    }
+
+    return result;
+}
+
+
+function escapeHtml(value) {
+
+    if (value === null || value === undefined) {
+        return "";
+    }
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
 
 
 async function loadExpenses() {
 
-  const table = document.getElementById("expenses");
+    const { data, error } = await supabaseClient
+        .from("expenses1")
+        .select("*")
+        .order("date", { ascending: false });
 
-  const { data, error } = await db
-    .from("expenses1")
-    .select("*")
-    .order("created_at", { ascending: false });
+    if (error) {
 
-  if (error) {
+        console.error(error);
 
-    console.error(error);
+        document.getElementById("expenses").innerHTML =
+            "Ошибка загрузки расходов";
 
-    table.innerHTML =
-      `<tr>
-        <td colspan="5" class="error">
-          Ошибка базы: ${error.message}
-        </td>
-      </tr>`;
+        return;
+    }
 
-    return;
-  }
+    renderExpenses(data || []);
+    calculateDebts(data || []);
+}
 
-  if (!data || data.length === 0) {
 
-    table.innerHTML =
-      `<tr>
-        <td colspan="5">Пока расходов нет</td>
-      </tr>`;
+function renderExpenses(data) {
 
-    return;
-  }
+    const container =
+        document.getElementById("expenses");
 
-  table.innerHTML = data.map(row => `
-    <tr>
-      <td>${safe(row.paid_by)}</td>
-      <td>${row.amount} ${safe(row.currency)}</td>
-      <td>${safe(row.description)}</td>
-      <td>${safe(row.participants)}</td>
-      <td>${safe(row.date)}</td>
-    </tr>
-  `).join("");
+    if (!data.length) {
+
+        container.innerHTML =
+            '<div class="empty">Расходов пока нет</div>';
+
+        return;
+    }
+
+
+    container.innerHTML = data.map(item => {
+
+        let participants = [];
+
+        try {
+
+            if (Array.isArray(item.participants)) {
+                participants = item.participants;
+            }
+            else if (typeof item.participants === "string") {
+                participants = JSON.parse(item.participants);
+            }
+
+        } catch (e) {
+
+            participants = [];
+        }
+
+
+        return `
+            <div class="expense">
+
+                <div class="expense-top">
+
+                    <div class="expense-desc">
+                        ${escapeHtml(item.description || "Расход")}
+                    </div>
+
+                    <div class="amount">
+                        ${escapeHtml(item.amount)}
+                        ${escapeHtml(item.currency || "GEL")}
+                    </div>
+
+                </div>
+
+                <div class="expense-meta">
+
+                    Заплатил:
+                    ${escapeHtml(item.paid_by || "—")}
+
+                    <br>
+
+                    За:
+                    ${participants.length
+                        ? participants.map(escapeHtml).join(", ")
+                        : "—"
+                    }
+
+                    <br>
+
+                    ${escapeHtml(item.date || "")}
+
+                </div>
+
+            </div>
+        `;
+
+    }).join("");
+}
+
+
+function calculateDebts(data) {
+
+    /*
+       Считаем не отдельных людей, а 3 бюджета:
+
+       1. Наиль + Лена
+       2. Булат + Динара
+       3. Эмиль
+
+       Внутри пары долгов нет.
+    */
+
+    const balances = {
+        "Наиль и Лена": 0,
+        "Булат и Динара": 0,
+        "Эмиль": 0
+    };
+
+
+    for (const expense of data) {
+
+        const amount =
+            Number(expense.amount) || 0;
+
+        if (amount <= 0) {
+            continue;
+        }
+
+
+        let participants = [];
+
+        try {
+
+            if (Array.isArray(expense.participants)) {
+                participants = expense.participants;
+            }
+            else if (typeof expense.participants === "string") {
+                participants =
+                    JSON.parse(expense.participants);
+            }
+
+        } catch (e) {
+
+            continue;
+        }
+
+
+        const participantPairs =
+            normalizeParticipants(participants);
+
+
+        if (!participantPairs.length) {
+            continue;
+        }
+
+
+        const payer =
+            getPair(expense.paid_by);
+
+
+        const share =
+            amount / participantPairs.length;
+
+
+        /*
+          Плательщик фактически внес всю сумму.
+          Каждый участник должен свою долю.
+
+          Баланс:
+          + = человек/пара переплатил
+          - = должен
+        */
+
+        balances[payer] += amount;
+
+
+        for (const pair of participantPairs) {
+
+            balances[pair] -= share;
+
+        }
+
+    }
+
+
+    renderDebts(balances);
+}
+
+
+function renderDebts(balances) {
+
+    const container =
+        document.getElementById("debts");
+
+
+    const positive = [];
+    const negative = [];
+
+
+    for (const [person, balance] of Object.entries(balances)) {
+
+        if (balance > 0.01) {
+
+            positive.push({
+                person,
+                amount: balance
+            });
+
+        }
+
+        if (balance < -0.01) {
+
+            negative.push({
+                person,
+                amount: Math.abs(balance)
+            });
+
+        }
+
+    }
+
+
+    if (!positive.length && !negative.length) {
+
+        container.innerHTML =
+            '<div class="empty">Все рассчитано 👍</div>';
+
+        return;
+    }
+
+
+    const debts = [];
+
+
+    let i = 0;
+    let j = 0;
+
+
+    while (
+        i < negative.length &&
+        j < positive.length
+    ) {
+
+        const debtor = negative[i];
+        const creditor = positive[j];
+
+
+        const amount =
+            Math.min(
+                debtor.amount,
+                creditor.amount
+            );
+
+
+        debts.push({
+            from: debtor.person,
+            to: creditor.person,
+            amount
+        });
+
+
+        debtor.amount -= amount;
+        creditor.amount -= amount;
+
+
+        if (debtor.amount < 0.01) {
+            i++;
+        }
+
+        if (creditor.amount < 0.01) {
+            j++;
+        }
+
+    }
+
+
+    if (!debts.length) {
+
+        container.innerHTML =
+            '<div class="empty">Все рассчитано 👍</div>';
+
+        return;
+    }
+
+
+    container.innerHTML = debts.map(debt => `
+
+        <div class="debt">
+
+            <div>
+                ${escapeHtml(debt.from)}
+                →
+                ${escapeHtml(debt.to)}
+            </div>
+
+            <div class="amount">
+                ${debt.amount.toFixed(2)} ₾
+            </div>
+
+        </div>
+
+    `).join("");
 }
 
 
 async function addExpense() {
 
-  const message = document.getElementById("message");
+    const button =
+        document.getElementById("addButton");
 
-  const paid_by =
-    document.getElementById("paid_by").value.trim();
-
-  const amount =
-    Number(document.getElementById("amount").value);
-
-  const currency =
-    document.getElementById("currency").value.trim() || "GEL";
-
-  const description =
-    document.getElementById("description").value.trim();
-
-  const participants =
-    document.getElementById("participants").value.trim();
-
-  const category =
-    document.getElementById("category").value.trim();
-
-  const pair =
-    document.getElementById("pair").value.trim();
-
-  const date =
-    document.getElementById("date").value || null;
+    const message =
+        document.getElementById("message");
 
 
-  if (!paid_by || !amount || !description) {
-
-    message.className = "message error";
-    message.textContent =
-      "Заполни: кто заплатил, сумму и за что.";
-
-    return;
-  }
+    const paidByElement =
+        document.querySelector(
+            'input[name="paidBy"]:checked'
+        );
 
 
-  message.className = "message";
-  message.textContent = "Сохраняем...";
+    const amount =
+        Number(
+            document.getElementById("amount").value
+        );
 
 
-  const { error } = await db
-    .from("expenses1")
-    .insert({
-      paid_by: paid_by,
-      amount: amount,
-      currency: currency,
-      description: description,
-      participants: participants,
-      category: category,
-      pair: pair,
-      date: date
-    });
+    const currency =
+        document.getElementById("currency").value;
 
 
-  if (error) {
-
-    console.error(error);
-
-    message.className = "message error";
-    message.textContent =
-      "Ошибка: " + error.message;
-
-    return;
-  }
+    const date =
+        document.getElementById("date").value;
 
 
-  message.className = "message success";
-  message.textContent = "Расход добавлен!";
+    const description =
+        document.getElementById("description").value.trim();
 
 
-  document.getElementById("paid_by").value = "";
-  document.getElementById("amount").value = "";
-  document.getElementById("description").value = "";
-  document.getElementById("participants").value = "";
-  document.getElementById("category").value = "";
-  document.getElementById("pair").value = "";
+    const participants =
+        Array.from(
+            document.querySelectorAll(
+                ".participant:checked"
+            )
+        ).map(
+            checkbox => checkbox.value
+        );
 
 
-  await loadExpenses();
+    if (!paidByElement) {
+
+        message.innerText =
+            "Выбери, кто заплатил";
+
+        return;
+    }
+
+
+    if (!amount || amount <= 0) {
+
+        message.innerText =
+            "Укажи сумму";
+
+        return;
+    }
+
+
+    if (!participants.length) {
+
+        message.innerText =
+            "Выбери, за кого заплатили";
+
+        return;
+    }
+
+
+    button.disabled = true;
+
+    message.innerText =
+        "Сохраняю...";
+
+
+    const paidBy =
+        paidByElement.value;
+
+
+    /*
+      В базе сохраняем конкретного плательщика,
+      даже если в интерфейсе выбран общий бюджет.
+
+      Для пары:
+      "Наиль и Лена" → сохраняем "Наиль"
+      "Булат и Динара" → сохраняем "Булат"
+    */
+
+    let databasePayer = paidBy;
+
+    if (paidBy === "Наиль и Лена") {
+        databasePayer = "Наиль";
+    }
+
+    if (paidBy === "Булат и Динара") {
+        databasePayer = "Булат";
+    }
+
+
+    const row = {
+
+        paid_by: databasePayer,
+
+        amount: amount,
+
+        currency: currency,
+
+        description:
+            description || "Расход",
+
+        participants:
+            participants,
+
+        date:
+            date || new Date().toISOString().slice(0, 10)
+
+    };
+
+
+    const { error } =
+        await supabaseClient
+            .from("expenses1")
+            .insert([row]);
+
+
+    if (error) {
+
+        console.error(error);
+
+        message.innerText =
+            "Ошибка: " + error.message;
+
+        button.disabled = false;
+
+        return;
+    }
+
+
+    message.innerText =
+        "Расход добавлен ✓";
+
+
+    document.getElementById("amount").value = "";
+
+    document.getElementById("description").value = "";
+
+
+    document.querySelectorAll(
+        ".participant"
+    ).forEach(
+        checkbox => checkbox.checked = false
+    );
+
+
+    document.querySelectorAll(
+        'input[name="paidBy"]'
+    ).forEach(
+        radio => radio.checked = false
+    );
+
+
+    button.disabled = false;
+
+
+    await loadExpenses();
+
 }
 
 
-function safe(value) {
-
-  if (value === null || value === undefined) {
-    return "";
-  }
-
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
+document.getElementById("date").value =
+    new Date().toISOString().slice(0, 10);
 
 
 loadExpenses();
