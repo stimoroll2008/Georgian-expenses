@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Расходы Грузия</title>
+
+<title>Расходы поездки</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -28,6 +29,10 @@ body {
 h1 {
     text-align: center;
     margin-bottom: 20px;
+}
+
+h2 {
+    margin-top: 0;
 }
 
 .card {
@@ -73,6 +78,7 @@ select {
 }
 
 .pay-button {
+    display: block;
     border: 1px solid #ddd;
     border-radius: 10px;
     padding: 10px 12px;
@@ -103,11 +109,14 @@ select {
     padding: 10px;
     cursor: pointer;
     background: #fafafa;
+    margin: 0;
+    font-weight: normal;
 }
 
 .person input {
     width: 18px;
     height: 18px;
+    margin: 0;
 }
 
 button {
@@ -139,6 +148,7 @@ button:disabled {
 .debt {
     display: flex;
     justify-content: space-between;
+    gap: 10px;
     padding: 10px 0;
     border-bottom: 1px solid #eee;
 }
@@ -149,6 +159,7 @@ button:disabled {
 
 .amount {
     font-weight: bold;
+    white-space: nowrap;
 }
 
 .expense {
@@ -182,13 +193,67 @@ button:disabled {
     padding: 15px;
 }
 
+/* Кнопка обнуления */
+
+.reset-card {
+    margin-top: 20px;
+}
+
+.reset-button {
+    background: #fff;
+    color: #d32f2f;
+    border: 1px solid #d32f2f;
+}
+
+.reset-button:hover {
+    background: #fff5f5;
+}
+
+.reset-confirm {
+    display: none;
+    margin-top: 12px;
+    padding: 14px;
+    border-radius: 12px;
+    background: #fff3f3;
+    border: 1px solid #f0b5b5;
+}
+
+.reset-warning {
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+    color: #8a1c1c;
+}
+
+.confirm-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.confirm-buttons button {
+    flex: 1;
+}
+
+.confirm-delete {
+    background: #d32f2f;
+}
+
+.cancel-reset {
+    background: #777;
+}
+
 @media (max-width: 500px) {
+
     .container {
         padding: 12px;
     }
 
     .people {
         grid-template-columns: 1fr;
+    }
+
+    .confirm-buttons {
+        flex-direction: column;
     }
 }
 </style>
@@ -200,6 +265,8 @@ button:disabled {
 
     <h1>💸 Расходы поездки</h1>
 
+    <!-- ДОБАВЛЕНИЕ РАСХОДА -->
+
     <div class="card">
 
         <label>Кто заплатил</label>
@@ -207,24 +274,45 @@ button:disabled {
         <div class="pay-buttons">
 
             <label>
-                <input type="radio" name="paidBy" value="Наиль и Лена">
-                <span class="pay-button">Наиль и Лена</span>
+                <input
+                    type="radio"
+                    name="paidBy"
+                    value="Наиль и Лена"
+                >
+                <span class="pay-button">
+                    Наиль и Лена
+                </span>
             </label>
 
             <label>
-                <input type="radio" name="paidBy" value="Булат и Динара">
-                <span class="pay-button">Булат и Динара</span>
+                <input
+                    type="radio"
+                    name="paidBy"
+                    value="Булат и Динара"
+                >
+                <span class="pay-button">
+                    Булат и Динара
+                </span>
             </label>
 
             <label>
-                <input type="radio" name="paidBy" value="Эмиль">
-                <span class="pay-button">Эмиль</span>
+                <input
+                    type="radio"
+                    name="paidBy"
+                    value="Эмиль"
+                >
+                <span class="pay-button">
+                    Эмиль
+                </span>
             </label>
 
         </div>
 
 
-        <label for="amount">Сумма</label>
+        <label for="amount">
+            Сумма
+        </label>
+
         <input
             id="amount"
             type="number"
@@ -234,19 +322,41 @@ button:disabled {
         >
 
 
-        <label for="currency">Валюта</label>
+        <label for="currency">
+            Валюта
+        </label>
+
         <select id="currency">
-            <option value="GEL">₾ Лари</option>
-            <option value="RUB">₽ Рубли</option>
-            <option value="USD">$ Доллары</option>
+
+            <option value="GEL">
+                ₾ Лари
+            </option>
+
+            <option value="RUB">
+                ₽ Рубли
+            </option>
+
+            <option value="USD">
+                $ Доллары
+            </option>
+
         </select>
 
 
-        <label for="date">Дата</label>
-        <input id="date" type="date">
+        <label for="date">
+            Дата
+        </label>
+
+        <input
+            id="date"
+            type="date"
+        >
 
 
-        <label for="description">Что купили</label>
+        <label for="description">
+            Что купили
+        </label>
+
         <input
             id="description"
             type="text"
@@ -254,64 +364,196 @@ button:disabled {
         >
 
 
-        <label>За кого</label>
+        <label>
+            За кого
+        </label>
 
         <div class="people">
 
             <label class="person">
-                <input type="checkbox" value="Наиль" class="participant">
-                <span>Наиль</span>
+
+                <input
+                    type="checkbox"
+                    value="Наиль"
+                    class="participant"
+                >
+
+                <span>
+                    Наиль
+                </span>
+
             </label>
 
-            <label class="person">
-                <input type="checkbox" value="Лена" class="participant">
-                <span>Лена</span>
-            </label>
 
             <label class="person">
-                <input type="checkbox" value="Булат" class="participant">
-                <span>Булат</span>
+
+                <input
+                    type="checkbox"
+                    value="Лена"
+                    class="participant"
+                >
+
+                <span>
+                    Лена
+                </span>
+
             </label>
 
-            <label class="person">
-                <input type="checkbox" value="Динара" class="participant">
-                <span>Динара</span>
-            </label>
 
             <label class="person">
-                <input type="checkbox" value="Эмиль" class="participant">
-                <span>Эмиль</span>
+
+                <input
+                    type="checkbox"
+                    value="Булат"
+                    class="participant"
+                >
+
+                <span>
+                    Булат
+                </span>
+
+            </label>
+
+
+            <label class="person">
+
+                <input
+                    type="checkbox"
+                    value="Динара"
+                    class="participant"
+                >
+
+                <span>
+                    Динара
+                </span>
+
+            </label>
+
+
+            <label class="person">
+
+                <input
+                    type="checkbox"
+                    value="Эмиль"
+                    class="participant"
+                >
+
+                <span>
+                    Эмиль
+                </span>
+
             </label>
 
         </div>
 
 
-        <button id="addButton" onclick="addExpense()">
+        <button
+            id="addButton"
+            onclick="addExpense()"
+        >
             Добавить расход
         </button>
 
-        <div id="message" class="message"></div>
+        <div
+            id="message"
+            class="message"
+        ></div>
 
     </div>
 
 
+    <!-- ДОЛГИ -->
+
     <div class="card">
 
-        <h2>💰 Кто кому должен</h2>
+        <h2>
+            💰 Кто кому должен
+        </h2>
 
-        <div id="debts" class="summary">
+        <div
+            id="debts"
+            class="summary"
+        >
             Загружаю...
         </div>
 
     </div>
 
 
+    <!-- ИСТОРИЯ -->
+
     <div class="card">
 
-        <h2>📋 История расходов</h2>
+        <h2>
+            📋 История расходов
+        </h2>
 
         <div id="expenses">
             Загружаю...
+        </div>
+
+    </div>
+
+
+    <!-- ОБНУЛЕНИЕ -->
+
+    <div class="card reset-card">
+
+        <button
+            class="reset-button"
+            onclick="showResetConfirmation()"
+        >
+            🗑️ Обнулить расчёты
+        </button>
+
+
+        <div
+            id="resetConfirm"
+            class="reset-confirm"
+        >
+
+            <div class="reset-warning">
+
+                <strong>
+                    ⚠️ Внимание!
+                </strong>
+
+                <br><br>
+
+                Все сохранённые расходы будут удалены
+                из общей базы.
+
+                <br>
+
+                Это действие нельзя отменить.
+
+                <br><br>
+
+                Ты действительно хочешь начать
+                расчёты заново?
+
+            </div>
+
+
+            <div class="confirm-buttons">
+
+                <button
+                    class="cancel-reset"
+                    onclick="cancelReset()"
+                >
+                    Отмена
+                </button>
+
+
+                <button
+                    class="confirm-delete"
+                    onclick="resetAllExpenses()"
+                >
+                    Да, удалить всё
+                </button>
+
+            </div>
+
         </div>
 
     </div>
@@ -321,11 +563,16 @@ button:disabled {
 
 <script>
 
+/* =========================================
+   SUPABASE
+========================================= */
+
 const SUPABASE_URL =
     "https://xhwypifggndzxlwcbpbu.supabase.co";
 
 const SUPABASE_KEY =
     "sb_publishable_ju2MdqK7EbSlOCgEbuUl_g_Y1Wl_sS0";
+
 
 const supabaseClient =
     window.supabase.createClient(
@@ -333,6 +580,10 @@ const supabaseClient =
         SUPABASE_KEY
     );
 
+
+/* =========================================
+   УЧАСТНИКИ
+========================================= */
 
 const people = [
     "Наиль",
@@ -343,42 +594,73 @@ const people = [
 ];
 
 
+/* =========================================
+   ОПРЕДЕЛЕНИЕ ПАРЫ
+========================================= */
+
 function getPair(person) {
 
-    if (person === "Наиль" || person === "Лена") {
+    if (
+        person === "Наиль" ||
+        person === "Лена"
+    ) {
         return "Наиль и Лена";
     }
 
-    if (person === "Булат" || person === "Динара") {
+
+    if (
+        person === "Булат" ||
+        person === "Динара"
+    ) {
         return "Булат и Динара";
     }
+
 
     return "Эмиль";
 }
 
 
+/* =========================================
+   ПРЕОБРАЗОВАНИЕ УЧАСТНИКОВ В БЮДЖЕТЫ
+========================================= */
+
 function normalizeParticipants(list) {
 
     const result = [];
 
+
     for (const person of list) {
 
-        const pair = getPair(person);
+        const pair =
+            getPair(person);
+
 
         if (!result.includes(pair)) {
+
             result.push(pair);
+
         }
+
     }
+
 
     return result;
 }
 
 
+/* =========================================
+   ЗАЩИТА HTML
+========================================= */
+
 function escapeHtml(value) {
 
-    if (value === null || value === undefined) {
+    if (
+        value === null ||
+        value === undefined
+    ) {
         return "";
     }
+
 
     return String(value)
         .replaceAll("&", "&amp;")
@@ -389,32 +671,66 @@ function escapeHtml(value) {
 }
 
 
+/* =========================================
+   ЗАГРУЗКА РАСХОДОВ
+========================================= */
+
 async function loadExpenses() {
 
-    const { data, error } = await supabaseClient
+    const {
+        data,
+        error
+    } = await supabaseClient
+
         .from("expenses1")
+
         .select("*")
-        .order("date", { ascending: false });
+
+        .order(
+            "date",
+            {
+                ascending: false
+            }
+        );
+
 
     if (error) {
 
         console.error(error);
 
-        document.getElementById("expenses").innerHTML =
+
+        document.getElementById(
+            "expenses"
+        ).innerHTML =
             "Ошибка загрузки расходов";
+
 
         return;
     }
 
-    renderExpenses(data || []);
-    calculateDebts(data || []);
+
+    renderExpenses(
+        data || []
+    );
+
+
+    calculateDebts(
+        data || []
+    );
 }
 
+
+/* =========================================
+   ОТОБРАЖЕНИЕ ИСТОРИИ
+========================================= */
 
 function renderExpenses(data) {
 
     const container =
-        document.getElementById("expenses");
+        document.getElementById(
+            "expenses"
+        );
+
 
     if (!data.length) {
 
@@ -425,90 +741,142 @@ function renderExpenses(data) {
     }
 
 
-    container.innerHTML = data.map(item => {
+    container.innerHTML =
+        data.map(item => {
 
-        let participants = [];
+            let participants = [];
 
-        try {
 
-            if (Array.isArray(item.participants)) {
-                participants = item.participants;
+            try {
+
+                if (
+                    Array.isArray(
+                        item.participants
+                    )
+                ) {
+
+                    participants =
+                        item.participants;
+
+                }
+
+                else if (
+                    typeof item.participants ===
+                    "string"
+                ) {
+
+                    participants =
+                        JSON.parse(
+                            item.participants
+                        );
+
+                }
+
             }
-            else if (typeof item.participants === "string") {
-                participants = JSON.parse(item.participants);
+
+            catch (e) {
+
+                participants = [];
+
             }
 
-        } catch (e) {
 
-            participants = [];
-        }
+            return `
+
+                <div class="expense">
+
+                    <div class="expense-top">
+
+                        <div class="expense-desc">
+
+                            ${escapeHtml(
+                                item.description ||
+                                "Расход"
+                            )}
+
+                        </div>
 
 
-        return `
-            <div class="expense">
+                        <div class="amount">
 
-                <div class="expense-top">
+                            ${escapeHtml(
+                                item.amount
+                            )}
 
-                    <div class="expense-desc">
-                        ${escapeHtml(item.description || "Расход")}
+                            ${escapeHtml(
+                                item.currency ||
+                                "GEL"
+                            )}
+
+                        </div>
+
                     </div>
 
-                    <div class="amount">
-                        ${escapeHtml(item.amount)}
-                        ${escapeHtml(item.currency || "GEL")}
+
+                    <div class="expense-meta">
+
+                        Заплатил:
+                        ${escapeHtml(
+                            item.paid_by ||
+                            "—"
+                        )}
+
+                        <br>
+
+                        За:
+                        ${
+                            participants.length
+                            ?
+                            participants
+                                .map(escapeHtml)
+                                .join(", ")
+                            :
+                            "—"
+                        }
+
+                        <br>
+
+                        ${escapeHtml(
+                            item.date ||
+                            ""
+                        )}
+
                     </div>
 
                 </div>
 
-                <div class="expense-meta">
+            `;
 
-                    Заплатил:
-                    ${escapeHtml(item.paid_by || "—")}
-
-                    <br>
-
-                    За:
-                    ${participants.length
-                        ? participants.map(escapeHtml).join(", ")
-                        : "—"
-                    }
-
-                    <br>
-
-                    ${escapeHtml(item.date || "")}
-
-                </div>
-
-            </div>
-        `;
-
-    }).join("");
+        }).join("");
 }
 
 
+/* =========================================
+   РАСЧЁТ ДОЛГОВ
+========================================= */
+
 function calculateDebts(data) {
 
-    /*
-       Считаем не отдельных людей, а 3 бюджета:
-
-       1. Наиль + Лена
-       2. Булат + Динара
-       3. Эмиль
-
-       Внутри пары долгов нет.
-    */
-
     const balances = {
+
         "Наиль и Лена": 0,
+
         "Булат и Динара": 0,
+
         "Эмиль": 0
+
     };
 
 
-    for (const expense of data) {
+    for (
+        const expense of data
+    ) {
 
         const amount =
-            Number(expense.amount) || 0;
+            Number(
+                expense.amount
+            ) || 0;
+
 
         if (amount <= 0) {
             continue;
@@ -517,52 +885,71 @@ function calculateDebts(data) {
 
         let participants = [];
 
+
         try {
 
-            if (Array.isArray(expense.participants)) {
-                participants = expense.participants;
-            }
-            else if (typeof expense.participants === "string") {
+            if (
+                Array.isArray(
+                    expense.participants
+                )
+            ) {
+
                 participants =
-                    JSON.parse(expense.participants);
+                    expense.participants;
+
             }
 
-        } catch (e) {
+            else if (
+                typeof expense.participants ===
+                "string"
+            ) {
+
+                participants =
+                    JSON.parse(
+                        expense.participants
+                    );
+
+            }
+
+        }
+
+        catch (e) {
 
             continue;
+
         }
 
 
         const participantPairs =
-            normalizeParticipants(participants);
+            normalizeParticipants(
+                participants
+            );
 
 
-        if (!participantPairs.length) {
+        if (
+            !participantPairs.length
+        ) {
             continue;
         }
 
 
         const payer =
-            getPair(expense.paid_by);
+            getPair(
+                expense.paid_by
+            );
 
 
         const share =
-            amount / participantPairs.length;
+            amount /
+            participantPairs.length;
 
-
-        /*
-          Плательщик фактически внес всю сумму.
-          Каждый участник должен свою долю.
-
-          Баланс:
-          + = человек/пара переплатил
-          - = должен
-        */
 
         balances[payer] += amount;
 
 
-        for (const pair of participantPairs) {
+        for (
+            const pair of participantPairs
+        ) {
 
             balances[pair] -= share;
 
@@ -571,36 +958,65 @@ function calculateDebts(data) {
     }
 
 
-    renderDebts(balances);
+    renderDebts(
+        balances
+    );
 }
 
+
+/* =========================================
+   ОТОБРАЖЕНИЕ ДОЛГОВ
+========================================= */
 
 function renderDebts(balances) {
 
     const container =
-        document.getElementById("debts");
+        document.getElementById(
+            "debts"
+        );
 
 
     const positive = [];
+
     const negative = [];
 
 
-    for (const [person, balance] of Object.entries(balances)) {
+    for (
+        const [
+            person,
+            balance
+        ]
+        of Object.entries(
+            balances
+        )
+    ) {
 
-        if (balance > 0.01) {
+        if (
+            balance > 0.01
+        ) {
 
             positive.push({
+
                 person,
+
                 amount: balance
+
             });
 
         }
 
-        if (balance < -0.01) {
+
+        if (
+            balance < -0.01
+        ) {
 
             negative.push({
+
                 person,
-                amount: Math.abs(balance)
+
+                amount:
+                    Math.abs(balance)
+
             });
 
         }
@@ -608,7 +1024,10 @@ function renderDebts(balances) {
     }
 
 
-    if (!positive.length && !negative.length) {
+    if (
+        !positive.length &&
+        !negative.length
+    ) {
 
         container.innerHTML =
             '<div class="empty">Все рассчитано 👍</div>';
@@ -621,6 +1040,7 @@ function renderDebts(balances) {
 
 
     let i = 0;
+
     let j = 0;
 
 
@@ -629,8 +1049,12 @@ function renderDebts(balances) {
         j < positive.length
     ) {
 
-        const debtor = negative[i];
-        const creditor = positive[j];
+        const debtor =
+            negative[i];
+
+
+        const creditor =
+            positive[j];
 
 
         const amount =
@@ -641,22 +1065,39 @@ function renderDebts(balances) {
 
 
         debts.push({
-            from: debtor.person,
-            to: creditor.person,
-            amount
+
+            from:
+                debtor.person,
+
+            to:
+                creditor.person,
+
+            amount:
+                amount
+
         });
 
 
         debtor.amount -= amount;
+
         creditor.amount -= amount;
 
 
-        if (debtor.amount < 0.01) {
+        if (
+            debtor.amount < 0.01
+        ) {
+
             i++;
+
         }
 
-        if (creditor.amount < 0.01) {
+
+        if (
+            creditor.amount < 0.01
+        ) {
+
             j++;
+
         }
 
     }
@@ -671,33 +1112,55 @@ function renderDebts(balances) {
     }
 
 
-    container.innerHTML = debts.map(debt => `
+    container.innerHTML =
+        debts.map(debt => `
 
-        <div class="debt">
+            <div class="debt">
 
-            <div>
-                ${escapeHtml(debt.from)}
-                →
-                ${escapeHtml(debt.to)}
+                <div>
+
+                    ${escapeHtml(
+                        debt.from
+                    )}
+
+                    →
+
+                    ${escapeHtml(
+                        debt.to
+                    )}
+
+                </div>
+
+
+                <div class="amount">
+
+                    ${debt.amount.toFixed(2)}
+                    ₾
+
+                </div>
+
             </div>
 
-            <div class="amount">
-                ${debt.amount.toFixed(2)} ₾
-            </div>
-
-        </div>
-
-    `).join("");
+        `).join("");
 }
 
+
+/* =========================================
+   ДОБАВЛЕНИЕ РАСХОДА
+========================================= */
 
 async function addExpense() {
 
     const button =
-        document.getElementById("addButton");
+        document.getElementById(
+            "addButton"
+        );
+
 
     const message =
-        document.getElementById("message");
+        document.getElementById(
+            "message"
+        );
 
 
     const paidByElement =
@@ -708,20 +1171,28 @@ async function addExpense() {
 
     const amount =
         Number(
-            document.getElementById("amount").value
+            document.getElementById(
+                "amount"
+            ).value
         );
 
 
     const currency =
-        document.getElementById("currency").value;
+        document.getElementById(
+            "currency"
+        ).value;
 
 
     const date =
-        document.getElementById("date").value;
+        document.getElementById(
+            "date"
+        ).value;
 
 
     const description =
-        document.getElementById("description").value.trim();
+        document.getElementById(
+            "description"
+        ).value.trim();
 
 
     const participants =
@@ -730,7 +1201,8 @@ async function addExpense() {
                 ".participant:checked"
             )
         ).map(
-            checkbox => checkbox.value
+            checkbox =>
+                checkbox.value
         );
 
 
@@ -743,7 +1215,10 @@ async function addExpense() {
     }
 
 
-    if (!amount || amount <= 0) {
+    if (
+        !amount ||
+        amount <= 0
+    ) {
 
         message.innerText =
             "Укажи сумму";
@@ -752,7 +1227,9 @@ async function addExpense() {
     }
 
 
-    if (!participants.length) {
+    if (
+        !participants.length
+    ) {
 
         message.innerText =
             "Выбери, за кого заплатили";
@@ -763,6 +1240,7 @@ async function addExpense() {
 
     button.disabled = true;
 
+
     message.innerText =
         "Сохраняю...";
 
@@ -772,59 +1250,96 @@ async function addExpense() {
 
 
     /*
-      В базе сохраняем конкретного плательщика,
-      даже если в интерфейсе выбран общий бюджет.
+       Для общей пары сохраняем одного
+       представителя в поле paid_by.
 
-      Для пары:
-      "Наиль и Лена" → сохраняем "Наиль"
-      "Булат и Динара" → сохраняем "Булат"
+       На расчёт это не влияет,
+       потому что дальше используется getPair().
     */
 
-    let databasePayer = paidBy;
+    let databasePayer =
+        paidBy;
 
-    if (paidBy === "Наиль и Лена") {
-        databasePayer = "Наиль";
+
+    if (
+        paidBy ===
+        "Наиль и Лена"
+    ) {
+
+        databasePayer =
+            "Наиль";
+
     }
 
-    if (paidBy === "Булат и Динара") {
-        databasePayer = "Булат";
+
+    if (
+        paidBy ===
+        "Булат и Динара"
+    ) {
+
+        databasePayer =
+            "Булат";
+
     }
 
 
     const row = {
 
-        paid_by: databasePayer,
+        paid_by:
+            databasePayer,
 
-        amount: amount,
+        amount:
+            amount,
 
-        currency: currency,
+        currency:
+            currency,
 
         description:
-            description || "Расход",
+            description ||
+            "Расход",
 
         participants:
             participants,
 
         date:
-            date || new Date().toISOString().slice(0, 10)
+            date ||
+            new Date()
+                .toISOString()
+                .slice(
+                    0,
+                    10
+                )
 
     };
 
 
-    const { error } =
+    const {
+        error
+    } =
         await supabaseClient
-            .from("expenses1")
-            .insert([row]);
+
+            .from(
+                "expenses1"
+            )
+
+            .insert([
+                row
+            ]);
 
 
     if (error) {
 
         console.error(error);
 
-        message.innerText =
-            "Ошибка: " + error.message;
 
-        button.disabled = false;
+        message.innerText =
+            "Ошибка: " +
+            error.message;
+
+
+        button.disabled =
+            false;
+
 
         return;
     }
@@ -834,40 +1349,230 @@ async function addExpense() {
         "Расход добавлен ✓";
 
 
-    document.getElementById("amount").value = "";
+    document.getElementById(
+        "amount"
+    ).value = "";
 
-    document.getElementById("description").value = "";
+
+    document.getElementById(
+        "description"
+    ).value = "";
 
 
     document.querySelectorAll(
         ".participant"
     ).forEach(
-        checkbox => checkbox.checked = false
+        checkbox =>
+            checkbox.checked =
+                false
     );
 
 
     document.querySelectorAll(
         'input[name="paidBy"]'
     ).forEach(
-        radio => radio.checked = false
+        radio =>
+            radio.checked =
+                false
     );
 
 
-    button.disabled = false;
+    button.disabled =
+        false;
 
 
     await loadExpenses();
+}
+
+
+/* =========================================
+   ПОКАЗАТЬ ПОДТВЕРЖДЕНИЕ
+========================================= */
+
+function showResetConfirmation() {
+
+    const confirmation =
+        document.getElementById(
+            "resetConfirm"
+        );
+
+
+    confirmation.style.display =
+        "block";
 
 }
 
 
-document.getElementById("date").value =
-    new Date().toISOString().slice(0, 10);
+/* =========================================
+   ОТМЕНА ОБНУЛЕНИЯ
+========================================= */
 
+function cancelReset() {
+
+    const confirmation =
+        document.getElementById(
+            "resetConfirm"
+        );
+
+
+    confirmation.style.display =
+        "none";
+
+}
+
+
+/* =========================================
+   ПОЛНОЕ ОБНУЛЕНИЕ
+========================================= */
+
+async function resetAllExpenses() {
+
+    const confirmation =
+        document.getElementById(
+            "resetConfirm"
+        );
+
+
+    const buttons =
+        confirmation.querySelectorAll(
+            "button"
+        );
+
+
+    buttons.forEach(
+        button =>
+            button.disabled =
+                true
+    );
+
+
+    confirmation.querySelector(
+        ".reset-warning"
+    ).innerHTML =
+
+        "<strong>Удаляю расходы...</strong>";
+
+
+    /*
+       Удаляем все записи из expenses1.
+
+       Фильтр id > 0 используется,
+       чтобы Supabase разрешил DELETE
+       при наличии RLS-политик.
+    */
+
+    const {
+        error
+    } =
+        await supabaseClient
+
+            .from(
+                "expenses1"
+            )
+
+            .delete()
+
+            .gt(
+                "id",
+                0
+            );
+
+
+    if (error) {
+
+        console.error(error);
+
+
+        confirmation.querySelector(
+            ".reset-warning"
+        ).innerHTML = `
+
+            <strong>
+                ❌ Ошибка
+            </strong>
+
+            <br><br>
+
+            Не удалось удалить расходы.
+
+            <br><br>
+
+            ${escapeHtml(
+                error.message
+            )}
+
+        `;
+
+
+        buttons.forEach(
+            button =>
+                button.disabled =
+                    false
+        );
+
+
+        return;
+    }
+
+
+    /*
+       Обновляем страницу
+       после удаления.
+    */
+
+    confirmation.querySelector(
+        ".reset-warning"
+    ).innerHTML = `
+
+        <strong>
+            ✅ Расчёты обнулены
+        </strong>
+
+        <br><br>
+
+        Все расходы удалены.
+
+    `;
+
+
+    await loadExpenses();
+
+
+    setTimeout(
+        () => {
+
+            confirmation.style.display =
+                "none";
+
+        },
+        1500
+    );
+
+}
+
+
+/* =========================================
+   ДАТА ПО УМОЛЧАНИЮ
+========================================= */
+
+document.getElementById(
+    "date"
+).value =
+    new Date()
+        .toISOString()
+        .slice(
+            0,
+            10
+        );
+
+
+/* =========================================
+   ПЕРВАЯ ЗАГРУЗКА
+========================================= */
 
 loadExpenses();
 
 </script>
 
 </body>
-</html>
+    </html>
