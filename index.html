@@ -193,14 +193,14 @@ button:disabled {
     padding: 15px;
 }
 
-/* Кнопка обнуления */
+/* Обнуление */
 
 .reset-card {
     margin-top: 20px;
 }
 
 .reset-button {
-    background: #fff;
+    background: white;
     color: #d32f2f;
     border: 1px solid #d32f2f;
 }
@@ -371,77 +371,48 @@ button:disabled {
         <div class="people">
 
             <label class="person">
-
                 <input
                     type="checkbox"
                     value="Наиль"
                     class="participant"
                 >
-
-                <span>
-                    Наиль
-                </span>
-
+                <span>Наиль</span>
             </label>
 
-
             <label class="person">
-
                 <input
                     type="checkbox"
                     value="Лена"
                     class="participant"
                 >
-
-                <span>
-                    Лена
-                </span>
-
+                <span>Лена</span>
             </label>
 
-
             <label class="person">
-
                 <input
                     type="checkbox"
                     value="Булат"
                     class="participant"
                 >
-
-                <span>
-                    Булат
-                </span>
-
+                <span>Булат</span>
             </label>
 
-
             <label class="person">
-
                 <input
                     type="checkbox"
                     value="Динара"
                     class="participant"
                 >
-
-                <span>
-                    Динара
-                </span>
-
+                <span>Динара</span>
             </label>
 
-
             <label class="person">
-
                 <input
                     type="checkbox"
                     value="Эмиль"
                     class="participant"
                 >
-
-                <span>
-                    Эмиль
-                </span>
-
+                <span>Эмиль</span>
             </label>
 
         </div>
@@ -466,9 +437,7 @@ button:disabled {
 
     <div class="card">
 
-        <h2>
-            💰 Кто кому должен
-        </h2>
+        <h2>💰 Кто кому должен</h2>
 
         <div
             id="debts"
@@ -484,9 +453,7 @@ button:disabled {
 
     <div class="card">
 
-        <h2>
-            📋 История расходов
-        </h2>
+        <h2>📋 История расходов</h2>
 
         <div id="expenses">
             Загружаю...
@@ -512,11 +479,12 @@ button:disabled {
             class="reset-confirm"
         >
 
-            <div class="reset-warning">
+            <div
+                id="resetWarning"
+                class="reset-warning"
+            >
 
-                <strong>
-                    ⚠️ Внимание!
-                </strong>
+                <strong>⚠️ Внимание!</strong>
 
                 <br><br>
 
@@ -546,6 +514,7 @@ button:disabled {
 
 
                 <button
+                    id="confirmDeleteButton"
                     class="confirm-delete"
                     onclick="resetAllExpenses()"
                 >
@@ -582,20 +551,7 @@ const supabaseClient =
 
 
 /* =========================================
-   УЧАСТНИКИ
-========================================= */
-
-const people = [
-    "Наиль",
-    "Лена",
-    "Булат",
-    "Динара",
-    "Эмиль"
-];
-
-
-/* =========================================
-   ОПРЕДЕЛЕНИЕ ПАРЫ
+   ПАРЫ
 ========================================= */
 
 function getPair(person) {
@@ -621,35 +577,7 @@ function getPair(person) {
 
 
 /* =========================================
-   ПРЕОБРАЗОВАНИЕ УЧАСТНИКОВ В БЮДЖЕТЫ
-========================================= */
-
-function normalizeParticipants(list) {
-
-    const result = [];
-
-
-    for (const person of list) {
-
-        const pair =
-            getPair(person);
-
-
-        if (!result.includes(pair)) {
-
-            result.push(pair);
-
-        }
-
-    }
-
-
-    return result;
-}
-
-
-/* =========================================
-   ЗАЩИТА HTML
+   HTML SECURITY
 ========================================= */
 
 function escapeHtml(value) {
@@ -672,7 +600,54 @@ function escapeHtml(value) {
 
 
 /* =========================================
-   ЗАГРУЗКА РАСХОДОВ
+   ПОЛУЧИТЬ УЧАСТНИКОВ
+========================================= */
+
+function getParticipants(expense) {
+
+    if (
+        Array.isArray(
+            expense.participants
+        )
+    ) {
+        return expense.participants;
+    }
+
+
+    if (
+        typeof expense.participants ===
+        "string"
+    ) {
+
+        try {
+
+            const parsed =
+                JSON.parse(
+                    expense.participants
+                );
+
+
+            if (
+                Array.isArray(parsed)
+            ) {
+                return parsed;
+            }
+
+        } catch (e) {
+
+            return [];
+
+        }
+
+    }
+
+
+    return [];
+}
+
+
+/* =========================================
+   ЗАГРУЗКА
 ========================================= */
 
 async function loadExpenses() {
@@ -698,12 +673,13 @@ async function loadExpenses() {
 
         console.error(error);
 
-
         document.getElementById(
             "expenses"
         ).innerHTML =
-            "Ошибка загрузки расходов";
-
+            "Ошибка загрузки расходов: " +
+            escapeHtml(
+                error.message
+            );
 
         return;
     }
@@ -721,7 +697,7 @@ async function loadExpenses() {
 
 
 /* =========================================
-   ОТОБРАЖЕНИЕ ИСТОРИИ
+   ИСТОРИЯ
 ========================================= */
 
 function renderExpenses(data) {
@@ -744,41 +720,10 @@ function renderExpenses(data) {
     container.innerHTML =
         data.map(item => {
 
-            let participants = [];
-
-
-            try {
-
-                if (
-                    Array.isArray(
-                        item.participants
-                    )
-                ) {
-
-                    participants =
-                        item.participants;
-
-                }
-
-                else if (
-                    typeof item.participants ===
-                    "string"
-                ) {
-
-                    participants =
-                        JSON.parse(
-                            item.participants
-                        );
-
-                }
-
-            }
-
-            catch (e) {
-
-                participants = [];
-
-            }
+            const participants =
+                getParticipants(
+                    item
+                );
 
 
             return `
@@ -852,10 +797,25 @@ function renderExpenses(data) {
 
 
 /* =========================================
-   РАСЧЁТ ДОЛГОВ
+   ГЛАВНЫЙ РАСЧЁТ
 ========================================= */
 
 function calculateDebts(data) {
+
+    /*
+       ВАЖНО:
+
+       Здесь мы сначала считаем долю
+       КАЖДОГО человека.
+
+       Например:
+
+       100 / 5 = 20
+
+       А уже после этого объединяем
+       Наиля + Лену и Булата + Динару.
+    */
+
 
     const balances = {
 
@@ -878,60 +838,39 @@ function calculateDebts(data) {
             ) || 0;
 
 
-        if (amount <= 0) {
-            continue;
-        }
-
-
-        let participants = [];
-
-
-        try {
-
-            if (
-                Array.isArray(
-                    expense.participants
-                )
-            ) {
-
-                participants =
-                    expense.participants;
-
-            }
-
-            else if (
-                typeof expense.participants ===
-                "string"
-            ) {
-
-                participants =
-                    JSON.parse(
-                        expense.participants
-                    );
-
-            }
-
-        }
-
-        catch (e) {
-
-            continue;
-
-        }
-
-
-        const participantPairs =
-            normalizeParticipants(
-                participants
-            );
-
-
         if (
-            !participantPairs.length
+            amount <= 0
         ) {
             continue;
         }
 
+
+        const participants =
+            getParticipants(
+                expense
+            );
+
+
+        if (
+            participants.length === 0
+        ) {
+            continue;
+        }
+
+
+        /*
+           Сколько должен каждый
+           конкретный человек.
+        */
+
+        const personShare =
+            amount /
+            participants.length;
+
+
+        /*
+           Кто заплатил.
+        */
 
         const payer =
             getPair(
@@ -939,19 +878,32 @@ function calculateDebts(data) {
             );
 
 
-        const share =
-            amount /
-            participantPairs.length;
-
+        /*
+           Плательщик получает плюс
+           на всю фактически оплаченную сумму.
+        */
 
         balances[payer] += amount;
 
 
+        /*
+           Каждый участник получает минус
+           только свою личную долю.
+        */
+
         for (
-            const pair of participantPairs
+            const person
+            of participants
         ) {
 
-            balances[pair] -= share;
+            const pair =
+                getPair(
+                    person
+                );
+
+
+            balances[pair] -=
+                personShare;
 
         }
 
@@ -965,7 +917,7 @@ function calculateDebts(data) {
 
 
 /* =========================================
-   ОТОБРАЖЕНИЕ ДОЛГОВ
+   ПОКАЗ ДОЛГОВ
 ========================================= */
 
 function renderDebts(balances) {
@@ -999,7 +951,8 @@ function renderDebts(balances) {
 
                 person,
 
-                amount: balance
+                amount:
+                    balance
 
             });
 
@@ -1015,7 +968,9 @@ function renderDebts(balances) {
                 person,
 
                 amount:
-                    Math.abs(balance)
+                    Math.abs(
+                        balance
+                    )
 
             });
 
@@ -1078,9 +1033,12 @@ function renderDebts(balances) {
         });
 
 
-        debtor.amount -= amount;
+        debtor.amount -=
+            amount;
 
-        creditor.amount -= amount;
+
+        creditor.amount -=
+            amount;
 
 
         if (
@@ -1146,7 +1104,7 @@ function renderDebts(balances) {
 
 
 /* =========================================
-   ДОБАВЛЕНИЕ РАСХОДА
+   ДОБАВИТЬ РАСХОД
 ========================================= */
 
 async function addExpense() {
@@ -1228,7 +1186,7 @@ async function addExpense() {
 
 
     if (
-        !participants.length
+        participants.length === 0
     ) {
 
         message.innerText =
@@ -1238,31 +1196,28 @@ async function addExpense() {
     }
 
 
-    button.disabled = true;
+    button.disabled =
+        true;
 
 
     message.innerText =
         "Сохраняю...";
 
 
-    const paidBy =
+    let databasePayer =
         paidByElement.value;
 
 
     /*
-       Для общей пары сохраняем одного
-       представителя в поле paid_by.
+       Для пары сохраняем одного
+       представителя.
 
-       На расчёт это не влияет,
-       потому что дальше используется getPair().
+       getPair() потом всё равно
+       определит правильную пару.
     */
 
-    let databasePayer =
-        paidBy;
-
-
     if (
-        paidBy ===
+        databasePayer ===
         "Наиль и Лена"
     ) {
 
@@ -1273,7 +1228,7 @@ async function addExpense() {
 
 
     if (
-        paidBy ===
+        databasePayer ===
         "Булат и Динара"
     ) {
 
@@ -1386,79 +1341,62 @@ async function addExpense() {
 
 
 /* =========================================
-   ПОКАЗАТЬ ПОДТВЕРЖДЕНИЕ
+   ОБНУЛЕНИЕ — ШАГ 1
 ========================================= */
 
 function showResetConfirmation() {
 
-    const confirmation =
-        document.getElementById(
-            "resetConfirm"
-        );
-
-
-    confirmation.style.display =
+    document.getElementById(
+        "resetConfirm"
+    ).style.display =
         "block";
-
 }
 
 
 /* =========================================
-   ОТМЕНА ОБНУЛЕНИЯ
+   ОТМЕНА
 ========================================= */
 
 function cancelReset() {
 
-    const confirmation =
-        document.getElementById(
-            "resetConfirm"
-        );
-
-
-    confirmation.style.display =
+    document.getElementById(
+        "resetConfirm"
+    ).style.display =
         "none";
-
 }
 
 
 /* =========================================
-   ПОЛНОЕ ОБНУЛЕНИЕ
+   ОБНУЛЕНИЕ — ШАГ 2
 ========================================= */
 
 async function resetAllExpenses() {
 
-    const confirmation =
+    const warning =
         document.getElementById(
-            "resetConfirm"
+            "resetWarning"
         );
 
 
-    const buttons =
-        confirmation.querySelectorAll(
-            "button"
+    const deleteButton =
+        document.getElementById(
+            "confirmDeleteButton"
         );
 
 
-    buttons.forEach(
-        button =>
-            button.disabled =
-                true
-    );
+    deleteButton.disabled =
+        true;
 
 
-    confirmation.querySelector(
-        ".reset-warning"
-    ).innerHTML =
-
+    warning.innerHTML =
         "<strong>Удаляю расходы...</strong>";
 
 
     /*
-       Удаляем все записи из expenses1.
+       Удаляем ВСЕ записи.
 
-       Фильтр id > 0 используется,
-       чтобы Supabase разрешил DELETE
-       при наличии RLS-политик.
+       Условие id > 0 означает:
+       удалить все строки с положительным id.
     */
 
     const {
@@ -1480,20 +1418,17 @@ async function resetAllExpenses() {
 
     if (error) {
 
-        console.error(error);
+        console.error(
+            "Ошибка удаления:",
+            error
+        );
 
 
-        confirmation.querySelector(
-            ".reset-warning"
-        ).innerHTML = `
+        warning.innerHTML = `
 
             <strong>
-                ❌ Ошибка
+                ❌ Не удалось обнулить расчёты
             </strong>
-
-            <br><br>
-
-            Не удалось удалить расходы.
 
             <br><br>
 
@@ -1501,14 +1436,17 @@ async function resetAllExpenses() {
                 error.message
             )}
 
+            <br><br>
+
+            Проверь, что SQL-политика
+            DELETE была добавлена
+            в Supabase.
+
         `;
 
 
-        buttons.forEach(
-            button =>
-                button.disabled =
-                    false
-        );
+        deleteButton.disabled =
+            false;
 
 
         return;
@@ -1516,13 +1454,10 @@ async function resetAllExpenses() {
 
 
     /*
-       Обновляем страницу
-       после удаления.
+       Успешное удаление.
     */
 
-    confirmation.querySelector(
-        ".reset-warning"
-    ).innerHTML = `
+    warning.innerHTML = `
 
         <strong>
             ✅ Расчёты обнулены
@@ -1535,24 +1470,39 @@ async function resetAllExpenses() {
     `;
 
 
+    /*
+       Обновляем историю
+       и расчёты.
+    */
+
     await loadExpenses();
 
+
+    /*
+       Через 1.5 секунды
+       закрываем окно.
+    */
 
     setTimeout(
         () => {
 
-            confirmation.style.display =
+            document.getElementById(
+                "resetConfirm"
+            ).style.display =
                 "none";
+
+
+            deleteButton.disabled =
+                false;
 
         },
         1500
     );
-
 }
 
 
 /* =========================================
-   ДАТА ПО УМОЛЧАНИЮ
+   ДАТА
 ========================================= */
 
 document.getElementById(
@@ -1567,7 +1517,7 @@ document.getElementById(
 
 
 /* =========================================
-   ПЕРВАЯ ЗАГРУЗКА
+   ЗАПУСК
 ========================================= */
 
 loadExpenses();
@@ -1575,4 +1525,4 @@ loadExpenses();
 </script>
 
 </body>
-    </html>
+</html>
