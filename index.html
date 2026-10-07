@@ -145,6 +145,16 @@ button:disabled {
     line-height: 1.6;
 }
 
+.currency-block {
+    margin-bottom: 18px;
+}
+
+.currency-title {
+    font-weight: bold;
+    font-size: 17px;
+    margin-bottom: 4px;
+}
+
 .debt {
     display: flex;
     justify-content: space-between;
@@ -551,6 +561,43 @@ const supabaseClient =
 
 
 /* =========================================
+   НАСТРОЙКИ
+========================================= */
+
+const CURRENCY_SYMBOLS = {
+
+    GEL: "₾",
+
+    RUB: "₽",
+
+    USD: "$"
+
+};
+
+
+const CURRENCY_NAMES = {
+
+    GEL: "Лари",
+
+    RUB: "Рубли",
+
+    USD: "Доллары"
+
+};
+
+
+const PAIRS = [
+
+    "Наиль и Лена",
+
+    "Булат и Динара",
+
+    "Эмиль"
+
+];
+
+
+/* =========================================
    ПАРЫ
 ========================================= */
 
@@ -558,21 +605,50 @@ function getPair(person) {
 
     if (
         person === "Наиль" ||
-        person === "Лена"
+        person === "Лена" ||
+        person === "Наиль и Лена"
     ) {
+
         return "Наиль и Лена";
+
     }
 
 
     if (
         person === "Булат" ||
-        person === "Динара"
+        person === "Динара" ||
+        person === "Булат и Динара"
     ) {
+
         return "Булат и Динара";
+
     }
 
 
-    return "Эмиль";
+    if (
+        person === "Эмиль"
+    ) {
+
+        return "Эмиль";
+
+    }
+
+
+    return null;
+}
+
+
+/* =========================================
+   ПРОВЕРКА ВАЛЮТЫ
+========================================= */
+
+function isValidCurrency(currency) {
+
+    return Object.prototype.hasOwnProperty.call(
+        CURRENCY_SYMBOLS,
+        currency
+    );
+
 }
 
 
@@ -586,7 +662,9 @@ function escapeHtml(value) {
         value === null ||
         value === undefined
     ) {
+
         return "";
+
     }
 
 
@@ -596,25 +674,32 @@ function escapeHtml(value) {
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+
 }
 
 
 /* =========================================
-   ПОЛУЧИТЬ УЧАСТНИКОВ
+   УЧАСТНИКИ
 ========================================= */
 
 function getParticipants(expense) {
+
+    let participants = [];
+
 
     if (
         Array.isArray(
             expense.participants
         )
     ) {
-        return expense.participants;
+
+        participants =
+            expense.participants;
+
     }
 
 
-    if (
+    else if (
         typeof expense.participants ===
         "string"
     ) {
@@ -630,10 +715,18 @@ function getParticipants(expense) {
             if (
                 Array.isArray(parsed)
             ) {
-                return parsed;
+
+                participants =
+                    parsed;
+
             }
 
         } catch (e) {
+
+            console.warn(
+                "Не удалось прочитать участников:",
+                e
+            );
 
             return [];
 
@@ -642,7 +735,68 @@ function getParticipants(expense) {
     }
 
 
-    return [];
+    /*
+       Убираем дубли.
+
+       Например:
+
+       ["Наиль", "Наиль", "Эмиль"]
+
+       превратится в:
+
+       ["Наиль", "Эмиль"]
+    */
+
+    participants =
+        [...new Set(participants)];
+
+
+    /*
+       Оставляем только настоящих
+       участников поездки.
+    */
+
+    participants =
+        participants.filter(
+            person =>
+                getPair(person) !== null
+        );
+
+
+    return participants;
+
+}
+
+
+/* =========================================
+   ФОРМАТИРОВАНИЕ ДЕНЕГ
+========================================= */
+
+function roundMoney(value) {
+
+    return Math.round(
+        (Number(value) + Number.EPSILON) * 100
+    ) / 100;
+
+}
+
+
+function formatMoney(
+    value,
+    currency
+) {
+
+    const symbol =
+        CURRENCY_SYMBOLS[currency] ||
+        currency;
+
+
+    return (
+        roundMoney(value)
+    ).toFixed(2) +
+    " " +
+    symbol;
+
 }
 
 
@@ -682,6 +836,7 @@ async function loadExpenses() {
             );
 
         return;
+
     }
 
 
@@ -693,6 +848,7 @@ async function loadExpenses() {
     calculateDebts(
         data || []
     );
+
 }
 
 
@@ -714,6 +870,7 @@ function renderExpenses(data) {
             '<div class="empty">Расходов пока нет</div>';
 
         return;
+
     }
 
 
@@ -724,6 +881,14 @@ function renderExpenses(data) {
                 getParticipants(
                     item
                 );
+
+
+            const currency =
+                isValidCurrency(
+                    item.currency
+                )
+                ? item.currency
+                : "GEL";
 
 
             return `
@@ -745,12 +910,10 @@ function renderExpenses(data) {
                         <div class="amount">
 
                             ${escapeHtml(
-                                item.amount
-                            )}
-
-                            ${escapeHtml(
-                                item.currency ||
-                                "GEL"
+                                formatMoney(
+                                    item.amount,
+                                    currency
+                                )
                             )}
 
                         </div>
@@ -793,6 +956,26 @@ function renderExpenses(data) {
             `;
 
         }).join("");
+
+}
+
+
+/* =========================================
+   СОЗДАНИЕ ПУСТЫХ БАЛАНСОВ
+========================================= */
+
+function createBalances() {
+
+    return {
+
+        "Наиль и Лена": 0,
+
+        "Булат и Динара": 0,
+
+        "Эмиль": 0
+
+    };
+
 }
 
 
@@ -803,27 +986,31 @@ function renderExpenses(data) {
 function calculateDebts(data) {
 
     /*
-       ВАЖНО:
+       ОЧЕНЬ ВАЖНО:
 
-       Здесь мы сначала считаем долю
-       КАЖДОГО человека.
+       Теперь каждая валюта считается
+       отдельно.
 
-       Например:
+       Нельзя складывать:
 
-       100 / 5 = 20
+       100 GEL
+       + 100 RUB
+       + 100 USD
 
-       А уже после этого объединяем
-       Наиля + Лену и Булата + Динару.
+       в один баланс.
     */
 
 
-    const balances = {
+    const balancesByCurrency = {
 
-        "Наиль и Лена": 0,
+        GEL:
+            createBalances(),
 
-        "Булат и Динара": 0,
+        RUB:
+            createBalances(),
 
-        "Эмиль": 0
+        USD:
+            createBalances()
 
     };
 
@@ -841,8 +1028,18 @@ function calculateDebts(data) {
         if (
             amount <= 0
         ) {
+
             continue;
+
         }
+
+
+        const currency =
+            isValidCurrency(
+                expense.currency
+            )
+            ? expense.currency
+            : "GEL";
 
 
         const participants =
@@ -854,23 +1051,16 @@ function calculateDebts(data) {
         if (
             participants.length === 0
         ) {
+
+            console.warn(
+                "Расход без участников:",
+                expense
+            );
+
             continue;
+
         }
 
-
-        /*
-           Сколько должен каждый
-           конкретный человек.
-        */
-
-        const personShare =
-            amount /
-            participants.length;
-
-
-        /*
-           Кто заплатил.
-        */
 
         const payer =
             getPair(
@@ -879,16 +1069,55 @@ function calculateDebts(data) {
 
 
         /*
+           Если плательщик неизвестен,
+           не включаем расход в расчёт,
+           чтобы случайно не записать
+           его на Эмиля.
+        */
+
+        if (!payer) {
+
+            console.warn(
+                "Неизвестный плательщик:",
+                expense.paid_by
+            );
+
+            continue;
+
+        }
+
+
+        /*
+           Доля каждого человека.
+        */
+
+        const personShare =
+            amount /
+            participants.length;
+
+
+        /*
+           Баланс соответствующей валюты.
+        */
+
+        const balances =
+            balancesByCurrency[
+                currency
+            ];
+
+
+        /*
            Плательщик получает плюс
            на всю фактически оплаченную сумму.
         */
 
-        balances[payer] += amount;
+        balances[payer] +=
+            amount;
 
 
         /*
            Каждый участник получает минус
-           только свою личную долю.
+           только своей доли.
         */
 
         for (
@@ -902,6 +1131,13 @@ function calculateDebts(data) {
                 );
 
 
+            if (!pair) {
+
+                continue;
+
+            }
+
+
             balances[pair] -=
                 personShare;
 
@@ -911,8 +1147,9 @@ function calculateDebts(data) {
 
 
     renderDebts(
-        balances
+        balancesByCurrency
     );
+
 }
 
 
@@ -920,7 +1157,9 @@ function calculateDebts(data) {
    ПОКАЗ ДОЛГОВ
 ========================================= */
 
-function renderDebts(balances) {
+function renderDebts(
+    balancesByCurrency
+) {
 
     const container =
         document.getElementById(
@@ -928,178 +1167,267 @@ function renderDebts(balances) {
         );
 
 
-    const positive = [];
+    let html = "";
 
-    const negative = [];
 
+    /*
+       Показываем каждую валюту
+       отдельным блоком.
+    */
 
     for (
-        const [
-            person,
-            balance
-        ]
-        of Object.entries(
-            balances
-        )
+        const currency
+        of ["GEL", "RUB", "USD"]
     ) {
 
-        if (
-            balance > 0.01
+        const balances =
+            balancesByCurrency[
+                currency
+            ];
+
+
+        const positive = [];
+
+        const negative = [];
+
+
+        for (
+            const [
+                person,
+                balance
+            ]
+            of Object.entries(
+                balances
+            )
         ) {
 
-            positive.push({
-
-                person,
-
-                amount:
+            const roundedBalance =
+                roundMoney(
                     balance
+                );
 
-            });
+
+            if (
+                roundedBalance >= 0.01
+            ) {
+
+                positive.push({
+
+                    person,
+
+                    amount:
+                        roundedBalance
+
+                });
+
+            }
+
+
+            if (
+                roundedBalance <= -0.01
+            ) {
+
+                negative.push({
+
+                    person,
+
+                    amount:
+                        Math.abs(
+                            roundedBalance
+                        )
+
+                });
+
+            }
 
         }
 
+
+        /*
+           Если по этой валюте
+           никто никому не должен,
+           блок не показываем.
+        */
 
         if (
-            balance < -0.01
+            !positive.length &&
+            !negative.length
         ) {
 
-            negative.push({
-
-                person,
-
-                amount:
-                    Math.abs(
-                        balance
-                    )
-
-            });
+            continue;
 
         }
+
+
+        const debts = [];
+
+
+        let i = 0;
+
+        let j = 0;
+
+
+        while (
+            i < negative.length &&
+            j < positive.length
+        ) {
+
+            const debtor =
+                negative[i];
+
+
+            const creditor =
+                positive[j];
+
+
+            const amount =
+                Math.min(
+                    debtor.amount,
+                    creditor.amount
+                );
+
+
+            const roundedAmount =
+                roundMoney(
+                    amount
+                );
+
+
+            if (
+                roundedAmount >= 0.01
+            ) {
+
+                debts.push({
+
+                    from:
+                        debtor.person,
+
+                    to:
+                        creditor.person,
+
+                    amount:
+                        roundedAmount
+
+                });
+
+            }
+
+
+            debtor.amount =
+                roundMoney(
+                    debtor.amount -
+                    amount
+                );
+
+
+            creditor.amount =
+                roundMoney(
+                    creditor.amount -
+                    amount
+                );
+
+
+            if (
+                debtor.amount < 0.01
+            ) {
+
+                i++;
+
+            }
+
+
+            if (
+                creditor.amount < 0.01
+            ) {
+
+                j++;
+
+            }
+
+        }
+
+
+        if (!debts.length) {
+
+            continue;
+
+        }
+
+
+        html += `
+
+            <div class="currency-block">
+
+                <div class="currency-title">
+
+                    ${escapeHtml(
+                        CURRENCY_NAMES[
+                            currency
+                        ]
+                    )}
+
+                </div>
+
+                ${
+
+                    debts.map(
+                        debt => `
+
+                            <div class="debt">
+
+                                <div>
+
+                                    ${escapeHtml(
+                                        debt.from
+                                    )}
+
+                                    →
+
+                                    ${escapeHtml(
+                                        debt.to
+                                    )}
+
+                                </div>
+
+
+                                <div class="amount">
+
+                                    ${escapeHtml(
+                                        formatMoney(
+                                            debt.amount,
+                                            currency
+                                        )
+                                    )}
+
+                                </div>
+
+                            </div>
+
+                        `
+                    ).join("")
+
+                }
+
+            </div>
+
+        `;
 
     }
 
 
-    if (
-        !positive.length &&
-        !negative.length
-    ) {
+    if (!html) {
 
         container.innerHTML =
             '<div class="empty">Все рассчитано 👍</div>';
 
         return;
-    }
 
-
-    const debts = [];
-
-
-    let i = 0;
-
-    let j = 0;
-
-
-    while (
-        i < negative.length &&
-        j < positive.length
-    ) {
-
-        const debtor =
-            negative[i];
-
-
-        const creditor =
-            positive[j];
-
-
-        const amount =
-            Math.min(
-                debtor.amount,
-                creditor.amount
-            );
-
-
-        debts.push({
-
-            from:
-                debtor.person,
-
-            to:
-                creditor.person,
-
-            amount:
-                amount
-
-        });
-
-
-        debtor.amount -=
-            amount;
-
-
-        creditor.amount -=
-            amount;
-
-
-        if (
-            debtor.amount < 0.01
-        ) {
-
-            i++;
-
-        }
-
-
-        if (
-            creditor.amount < 0.01
-        ) {
-
-            j++;
-
-        }
-
-    }
-
-
-    if (!debts.length) {
-
-        container.innerHTML =
-            '<div class="empty">Все рассчитано 👍</div>';
-
-        return;
     }
 
 
     container.innerHTML =
-        debts.map(debt => `
+        html;
 
-            <div class="debt">
-
-                <div>
-
-                    ${escapeHtml(
-                        debt.from
-                    )}
-
-                    →
-
-                    ${escapeHtml(
-                        debt.to
-                    )}
-
-                </div>
-
-
-                <div class="amount">
-
-                    ${debt.amount.toFixed(2)}
-                    ₾
-
-                </div>
-
-            </div>
-
-        `).join("");
 }
 
 
@@ -1153,15 +1481,25 @@ async function addExpense() {
         ).value.trim();
 
 
+    /*
+       Собираем участников.
+       Set дополнительно защищает
+       от дублей.
+    */
+
     const participants =
-        Array.from(
-            document.querySelectorAll(
-                ".participant:checked"
+        [
+            ...new Set(
+                Array.from(
+                    document.querySelectorAll(
+                        ".participant:checked"
+                    )
+                ).map(
+                    checkbox =>
+                        checkbox.value
+                )
             )
-        ).map(
-            checkbox =>
-                checkbox.value
-        );
+        ];
 
 
     if (!paidByElement) {
@@ -1170,11 +1508,30 @@ async function addExpense() {
             "Выбери, кто заплатил";
 
         return;
+
+    }
+
+
+    /*
+       Проверяем плательщика.
+    */
+
+    if (
+        !getPair(
+            paidByElement.value
+        )
+    ) {
+
+        message.innerText =
+            "Неизвестный плательщик";
+
+        return;
+
     }
 
 
     if (
-        !amount ||
+        !Number.isFinite(amount) ||
         amount <= 0
     ) {
 
@@ -1182,6 +1539,19 @@ async function addExpense() {
             "Укажи сумму";
 
         return;
+
+    }
+
+
+    if (
+        !isValidCurrency(currency)
+    ) {
+
+        message.innerText =
+            "Выбери корректную валюту";
+
+        return;
+
     }
 
 
@@ -1193,6 +1563,28 @@ async function addExpense() {
             "Выбери, за кого заплатили";
 
         return;
+
+    }
+
+
+    /*
+       Проверяем всех участников.
+    */
+
+    const invalidParticipant =
+        participants.find(
+            person =>
+                !getPair(person)
+        );
+
+
+    if (invalidParticipant) {
+
+        message.innerText =
+            "Обнаружен неизвестный участник";
+
+        return;
+
     }
 
 
@@ -1204,38 +1596,28 @@ async function addExpense() {
         "Сохраняю...";
 
 
-    let databasePayer =
-        paidByElement.value;
-
-
     /*
-       Для пары сохраняем одного
-       представителя.
+       ВАЖНО:
 
-       getPair() потом всё равно
-       определит правильную пару.
+       Теперь сохраняем именно то,
+       что пользователь выбрал:
+
+       "Наиль и Лена"
+
+       или
+
+       "Булат и Динара"
+
+       или
+
+       "Эмиль"
+
+       Поэтому история будет показывать
+       правильного плательщика.
     */
 
-    if (
-        databasePayer ===
-        "Наиль и Лена"
-    ) {
-
-        databasePayer =
-            "Наиль";
-
-    }
-
-
-    if (
-        databasePayer ===
-        "Булат и Динара"
-    ) {
-
-        databasePayer =
-            "Булат";
-
-    }
+    const databasePayer =
+        paidByElement.value;
 
 
     const row = {
@@ -1244,7 +1626,9 @@ async function addExpense() {
             databasePayer,
 
         amount:
-            amount,
+            roundMoney(
+                amount
+            ),
 
         currency:
             currency,
@@ -1258,12 +1642,7 @@ async function addExpense() {
 
         date:
             date ||
-            new Date()
-                .toISOString()
-                .slice(
-                    0,
-                    10
-                )
+            getLocalDate()
 
     };
 
@@ -1297,6 +1676,7 @@ async function addExpense() {
 
 
         return;
+
     }
 
 
@@ -1337,6 +1717,50 @@ async function addExpense() {
 
 
     await loadExpenses();
+
+}
+
+
+/* =========================================
+   ЛОКАЛЬНАЯ ДАТА
+========================================= */
+
+function getLocalDate() {
+
+    const now =
+        new Date();
+
+
+    const year =
+        now.getFullYear();
+
+
+    const month =
+        String(
+            now.getMonth() + 1
+        ).padStart(
+            2,
+            "0"
+        );
+
+
+    const day =
+        String(
+            now.getDate()
+        ).padStart(
+            2,
+            "0"
+        );
+
+
+    return (
+        year +
+        "-" +
+        month +
+        "-" +
+        day
+    );
+
 }
 
 
@@ -1350,6 +1774,7 @@ function showResetConfirmation() {
         "resetConfirm"
     ).style.display =
         "block";
+
 }
 
 
@@ -1363,6 +1788,7 @@ function cancelReset() {
         "resetConfirm"
     ).style.display =
         "none";
+
 }
 
 
@@ -1393,10 +1819,11 @@ async function resetAllExpenses() {
 
 
     /*
-       Удаляем ВСЕ записи.
+       Удаляем все записи.
 
-       Условие id > 0 означает:
-       удалить все строки с положительным id.
+       Сейчас оставляем тот же запрос,
+       который уже работает в твоём
+       проекте.
     */
 
     const {
@@ -1450,12 +1877,9 @@ async function resetAllExpenses() {
 
 
         return;
+
     }
 
-
-    /*
-       Успешное удаление.
-    */
 
     warning.innerHTML = `
 
@@ -1470,18 +1894,8 @@ async function resetAllExpenses() {
     `;
 
 
-    /*
-       Обновляем историю
-       и расчёты.
-    */
-
     await loadExpenses();
 
-
-    /*
-       Через 1.5 секунды
-       закрываем окно.
-    */
 
     setTimeout(
         () => {
@@ -1498,22 +1912,18 @@ async function resetAllExpenses() {
         },
         1500
     );
+
 }
 
 
 /* =========================================
-   ДАТА
+   ДАТА ПРИ ЗАПУСКЕ
 ========================================= */
 
 document.getElementById(
     "date"
 ).value =
-    new Date()
-        .toISOString()
-        .slice(
-            0,
-            10
-        );
+    getLocalDate();
 
 
 /* =========================================
@@ -1525,4 +1935,4 @@ loadExpenses();
 </script>
 
 </body>
-</html>
+    </html>
