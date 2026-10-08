@@ -10,10 +10,6 @@
 
 <style>
 
-/* =========================================================
-   ОСНОВНЫЕ НАСТРОЙКИ
-========================================================= */
-
 * {
     box-sizing: border-box;
 }
@@ -380,6 +376,8 @@ select:focus {
     border: 1px solid transparent;
 
     box-shadow: none;
+
+    cursor: pointer;
 }
 
 .all-participants-button.selected {
@@ -443,7 +441,7 @@ select:focus {
 
 
 /* =========================================================
-   MAIN BUTTON
+   BUTTONS
 ========================================================= */
 
 .main-button {
@@ -605,13 +603,12 @@ button:disabled {
 
 .expense:last-child {
     border-bottom: none;
-    padding-bottom: 0;
 }
 
 .expense-top {
     display: flex;
 
-    align-items: center;
+    align-items: flex-start;
 
     justify-content: space-between;
 
@@ -622,6 +619,8 @@ button:disabled {
     font-weight: 700;
 
     font-size: 15px;
+
+    flex: 1;
 }
 
 .expense-top .amount {
@@ -636,6 +635,154 @@ button:disabled {
     line-height: 1.55;
 
     margin-top: 6px;
+}
+
+
+/* =========================================================
+   HISTORY ACTIONS
+========================================================= */
+
+.expense-actions {
+    display: flex;
+
+    gap: 7px;
+
+    margin-top: 11px;
+}
+
+.edit-button,
+.delete-expense-button {
+    border-radius: 10px;
+
+    padding: 8px 11px;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.edit-button {
+    background: #f0efff;
+
+    color: var(--accent);
+
+    border: 1px solid rgba(108,92,231,.12);
+}
+
+.delete-expense-button {
+    background: rgba(224,82,82,.07);
+
+    color: var(--red);
+
+    border: 1px solid rgba(224,82,82,.13);
+}
+
+.edit-button:hover {
+    background: #e8e6ff;
+}
+
+.delete-expense-button:hover {
+    background: rgba(224,82,82,.12);
+}
+
+
+/* =========================================================
+   EDIT FORM
+========================================================= */
+
+.edit-form {
+    margin-top: 14px;
+
+    padding: 15px;
+
+    border-radius: 17px;
+
+    background: rgba(246,246,255,.85);
+
+    border: 1px solid rgba(108,92,231,.12);
+}
+
+.edit-form-title {
+    font-size: 13px;
+
+    font-weight: 750;
+
+    margin-bottom: 14px;
+}
+
+.edit-form .pay-buttons {
+    margin-bottom: 12px;
+}
+
+.edit-form .pay-button {
+    min-height: 44px;
+
+    font-size: 11px;
+}
+
+.edit-form .people {
+    margin-bottom: 13px;
+}
+
+.edit-form .person {
+    padding: 9px 10px;
+
+    font-size: 12px;
+}
+
+.edit-form input[type="number"],
+.edit-form input[type="date"],
+.edit-form input[type="text"],
+.edit-form select {
+    padding: 11px 12px;
+
+    font-size: 14px;
+
+    margin-bottom: 11px;
+}
+
+.edit-actions {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 8px;
+
+    margin-top: 5px;
+}
+
+.save-edit-button,
+.cancel-edit-button {
+    border: 0;
+
+    border-radius: 12px;
+
+    padding: 11px;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.save-edit-button {
+    background:
+        linear-gradient(
+            135deg,
+            #7465ed,
+            #5543d3
+        );
+
+    color: white;
+}
+
+.cancel-edit-button {
+    background: #e8e9ef;
+
+    color: #555a66;
 }
 
 
@@ -704,6 +851,18 @@ button:disabled {
 
 .confirm-buttons button {
     flex: 1;
+
+    border: 0;
+
+    border-radius: 12px;
+
+    padding: 12px;
+
+    color: white;
+
+    font-weight: 700;
+
+    cursor: pointer;
 }
 
 .confirm-delete {
@@ -781,6 +940,20 @@ button:disabled {
     .confirm-buttons {
         flex-direction: column;
     }
+
+    .expense-actions {
+        width: 100%;
+    }
+
+    .edit-button,
+    .delete-expense-button {
+        flex: 1;
+    }
+
+    .edit-actions {
+        grid-template-columns:
+            1fr 1fr;
+    }
 }
 
 @media (max-width: 370px) {
@@ -790,6 +963,11 @@ button:disabled {
     }
 
     .people {
+        grid-template-columns:
+            1fr;
+    }
+
+    .edit-actions {
         grid-template-columns:
             1fr;
     }
@@ -983,8 +1161,6 @@ button:disabled {
         >
 
 
-        <!-- PARTICIPANTS -->
-
         <div class="participants-header">
 
             <label>
@@ -995,7 +1171,6 @@ button:disabled {
                 type="button"
                 id="allParticipantsButton"
                 class="all-participants-button"
-                onclick="toggleAllParticipants()"
             >
                 За всех
             </button>
@@ -1085,7 +1260,6 @@ button:disabled {
         <button
             id="addButton"
             class="main-button"
-            onclick="addExpense()"
         >
             Добавить расход
         </button>
@@ -1178,7 +1352,7 @@ button:disabled {
 
         <button
             class="reset-button"
-            onclick="showResetConfirmation()"
+            id="resetButton"
         >
             🗑️ Обнулить расчёты
         </button>
@@ -1219,7 +1393,7 @@ button:disabled {
 
                 <button
                     class="cancel-reset"
-                    onclick="cancelReset()"
+                    id="cancelResetButton"
                 >
                     Отмена
                 </button>
@@ -1228,7 +1402,6 @@ button:disabled {
                 <button
                     id="confirmDeleteButton"
                     class="confirm-delete"
-                    onclick="resetAllExpenses()"
                 >
                     Да, удалить всё
                 </button>
@@ -1268,9 +1441,7 @@ const supabaseClient =
 const CURRENCY_SYMBOLS = {
 
     GEL: "₾",
-
     RUB: "₽",
-
     USD: "$"
 
 };
@@ -1279,12 +1450,21 @@ const CURRENCY_SYMBOLS = {
 const CURRENCY_NAMES = {
 
     GEL: "Лари",
-
     RUB: "Рубли",
-
     USD: "Доллары"
 
 };
+
+
+const PEOPLE = [
+
+    "Наиль",
+    "Лена",
+    "Булат",
+    "Динара",
+    "Эмиль"
+
+];
 
 
 /* =========================================================
@@ -1361,30 +1541,11 @@ function escapeHtml(value) {
 
     return String(value)
 
-        .replaceAll(
-            "&",
-            "&amp;"
-        )
-
-        .replaceAll(
-            "<",
-            "&lt;"
-        )
-
-        .replaceAll(
-            ">",
-            "&gt;"
-        )
-
-        .replaceAll(
-            '"',
-            "&quot;"
-        )
-
-        .replaceAll(
-            "'",
-            "&#039;"
-        );
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 
 }
 
@@ -1408,7 +1569,6 @@ function getParticipants(expense) {
             expense.participants;
 
     }
-
 
     else if (
         typeof expense.participants ===
@@ -1436,11 +1596,11 @@ function getParticipants(expense) {
 
         }
 
-        catch (e) {
+        catch (error) {
 
             console.warn(
                 "Не удалось прочитать участников:",
-                e
+                error
             );
 
             return [];
@@ -1450,22 +1610,14 @@ function getParticipants(expense) {
     }
 
 
-    participants =
-        [
-            ...new Set(
-                participants
+    return [
+        ...new Set(
+            participants.filter(
+                person =>
+                    getPair(person) !== null
             )
-        ];
-
-
-    participants =
-        participants.filter(
-            person =>
-                getPair(person) !== null
-        );
-
-
-    return participants;
+        )
+    ];
 
 }
 
@@ -1498,9 +1650,7 @@ function formatMoney(
 
 
     return (
-        roundMoney(
-            value
-        )
+        roundMoney(value)
     ).toFixed(2)
     +
     " "
@@ -1511,13 +1661,56 @@ function formatMoney(
 
 
 /* =========================================================
-   "FOR EVERYONE"
+   DATE
 ========================================================= */
 
-function toggleAllParticipants() {
+function getLocalDate() {
+
+    const now =
+        new Date();
+
+
+    const year =
+        now.getFullYear();
+
+
+    const month =
+        String(
+            now.getMonth() + 1
+        ).padStart(
+            2,
+            "0"
+        );
+
+
+    const day =
+        String(
+            now.getDate()
+        ).padStart(
+            2,
+            "0"
+        );
+
+
+    return (
+        year +
+        "-" +
+        month +
+        "-" +
+        day
+    );
+
+}
+
+
+/* =========================================================
+   ALL PARTICIPANTS
+========================================================= */
+
+function toggleAllParticipants(container) {
 
     const checkboxes =
-        document.querySelectorAll(
+        container.querySelectorAll(
             ".participant"
         );
 
@@ -1542,34 +1735,47 @@ function toggleAllParticipants() {
     );
 
 
-    updateAllParticipantsButton();
+    updateAllParticipantsButton(
+        container
+    );
 
 }
 
 
-function updateAllParticipantsButton() {
+function updateAllParticipantsButton(
+    container
+) {
 
-    const button =
-        document.getElementById(
-            "allParticipantsButton"
-        );
-
-
-    if (!button) {
+    if (!container) {
 
         return;
 
     }
 
 
+    const button =
+        container.querySelector(
+            ".all-participants-button"
+        );
+
+
     const checkboxes =
-        document.querySelectorAll(
+        container.querySelectorAll(
             ".participant"
         );
 
 
+    if (
+        !button ||
+        !checkboxes.length
+    ) {
+
+        return;
+
+    }
+
+
     const allSelected =
-        checkboxes.length > 0 &&
         Array.from(
             checkboxes
         ).every(
@@ -1604,28 +1810,46 @@ function updateAllParticipantsButton() {
 
 
 /* =========================================================
-   MANUAL CHECKBOXES
+   GET SELECTED PARTICIPANTS
 ========================================================= */
 
-document.querySelectorAll(
-    ".participant"
-).forEach(
-    checkbox => {
+function getSelectedParticipants(
+    container
+) {
 
-        checkbox.addEventListener(
-            "change",
-            updateAllParticipantsButton
-        );
+    return [
+        ...new Set(
 
-    }
-);
+            Array.from(
+                container.querySelectorAll(
+                    ".participant:checked"
+                )
+            ).map(
+                checkbox =>
+                    checkbox.value
+            )
+
+        )
+    ];
+
+}
 
 
 /* =========================================================
-   LOAD
+   LOAD EXPENSES
 ========================================================= */
 
 async function loadExpenses() {
+
+    const container =
+        document.getElementById(
+            "expenses"
+        );
+
+
+    container.innerHTML =
+        '<div class="empty">Загружаю...</div>';
+
 
     const {
         data,
@@ -1633,9 +1857,7 @@ async function loadExpenses() {
     } =
         await supabaseClient
 
-            .from(
-                "expenses1"
-            )
+            .from("expenses1")
 
             .select("*")
 
@@ -1650,13 +1872,12 @@ async function loadExpenses() {
     if (error) {
 
         console.error(
+            "Ошибка загрузки:",
             error
         );
 
 
-        document.getElementById(
-            "expenses"
-        ).innerHTML =
+        container.innerHTML =
             "Ошибка загрузки расходов: "
             +
             escapeHtml(
@@ -1705,94 +1926,857 @@ function renderExpenses(data) {
 
     container.innerHTML =
         data.map(
-            item => {
+            item =>
+                renderExpense(
+                    item
+                )
+        ).join("");
 
-                const participants =
-                    getParticipants(
-                        item
+
+    attachHistoryEvents();
+
+}
+
+
+/* =========================================================
+   SINGLE EXPENSE
+========================================================= */
+
+function renderExpense(item) {
+
+    const participants =
+        getParticipants(
+            item
+        );
+
+
+    const currency =
+        isValidCurrency(
+            item.currency
+        )
+        ?
+        item.currency
+        :
+        "GEL";
+
+
+    const id =
+        escapeHtml(
+            item.id
+        );
+
+
+    return `
+
+        <div
+            class="expense"
+            data-expense-id="${id}"
+        >
+
+            <div class="expense-top">
+
+                <div class="expense-desc">
+
+                    ${escapeHtml(
+                        item.description ||
+                        "Расход"
+                    )}
+
+                </div>
+
+
+                <div class="amount">
+
+                    ${escapeHtml(
+                        formatMoney(
+                            item.amount,
+                            currency
+                        )
+                    )}
+
+                </div>
+
+            </div>
+
+
+            <div class="expense-meta">
+
+                Заплатил:
+                ${escapeHtml(
+                    item.paid_by ||
+                    "—"
+                )}
+
+                <br>
+
+                За:
+                ${
+                    participants.length
+                    ?
+                    participants
+                        .map(
+                            escapeHtml
+                        )
+                        .join(", ")
+                    :
+                    "—"
+                }
+
+                <br>
+
+                ${escapeHtml(
+                    item.date ||
+                    ""
+                )}
+
+            </div>
+
+
+            <div class="expense-actions">
+
+                <button
+                    type="button"
+                    class="edit-button"
+                    data-action="edit"
+                    data-id="${id}"
+                >
+                    ✏️ Изменить
+                </button>
+
+
+                <button
+                    type="button"
+                    class="delete-expense-button"
+                    data-action="delete"
+                    data-id="${id}"
+                >
+                    🗑️ Удалить
+                </button>
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   HISTORY EVENTS
+========================================================= */
+
+function attachHistoryEvents() {
+
+    document.querySelectorAll(
+        "[data-action='edit']"
+    ).forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    openEditForm(
+                        button.dataset.id
                     );
 
+                }
+            );
 
-                const currency =
-                    isValidCurrency(
-                        item.currency
-                    )
-                    ?
-                    item.currency
-                    :
-                    "GEL";
+        }
+    );
 
 
-                return `
+    document.querySelectorAll(
+        "[data-action='delete']"
+    ).forEach(
+        button => {
 
-                    <div class="expense">
+            button.addEventListener(
+                "click",
+                () => {
 
-                        <div class="expense-top">
+                    deleteExpense(
+                        button.dataset.id
+                    );
 
-                            <div class="expense-desc">
+                }
+            );
 
-                                ${escapeHtml(
-                                    item.description ||
-                                    "Расход"
-                                )}
+        }
+    );
 
-                            </div>
-
-
-                            <div class="amount">
-
-                                ${escapeHtml(
-                                    formatMoney(
-                                        item.amount,
-                                        currency
-                                    )
-                                )}
-
-                            </div>
-
-                        </div>
+}
 
 
-                        <div class="expense-meta">
+/* =========================================================
+   EDIT FORM
+========================================================= */
 
-                            Заплатил:
-                            ${escapeHtml(
-                                item.paid_by ||
-                                "—"
-                            )}
+async function openEditForm(id) {
 
-                            <br>
+    const expenseElement =
+        document.querySelector(
+            `.expense[data-expense-id="${CSS.escape(String(id))}"]`
+        );
 
-                            За:
-                            ${
-                                participants.length
-                                ?
-                                participants
-                                    .map(
-                                        escapeHtml
-                                    )
-                                    .join(
-                                        ", "
-                                    )
-                                :
-                                "—"
-                            }
 
-                            <br>
+    if (!expenseElement) {
 
-                            ${escapeHtml(
-                                item.date ||
-                                ""
-                            )}
+        return;
 
-                        </div>
+    }
 
-                    </div>
 
-                `;
+    if (
+        expenseElement.querySelector(
+            ".edit-form"
+        )
+    ) {
 
+        return;
+
+    }
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+
+            .from("expenses1")
+
+            .select("*")
+
+            .eq("id", id)
+
+            .single();
+
+
+    if (error) {
+
+        alert(
+            "Не удалось загрузить расход:\n\n"
+            +
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    const participants =
+        getParticipants(
+            data
+        );
+
+
+    const currency =
+        isValidCurrency(
+            data.currency
+        )
+        ?
+        data.currency
+        :
+        "GEL";
+
+
+    const form =
+        document.createElement(
+            "div"
+        );
+
+
+    form.className =
+        "edit-form";
+
+
+    form.innerHTML = `
+
+        <div class="edit-form-title">
+            ✏️ Редактирование расхода
+        </div>
+
+
+        <label>
+            Кто заплатил
+        </label>
+
+        <div class="pay-buttons">
+
+            <label>
+
+                <input
+                    type="radio"
+                    name="editPaidBy_${escapeHtml(id)}"
+                    value="Наиль и Лена"
+                    ${data.paid_by === "Наиль и Лена" ? "checked" : ""}
+                >
+
+                <span class="pay-button">
+                    Наиль и Лена
+                </span>
+
+            </label>
+
+
+            <label>
+
+                <input
+                    type="radio"
+                    name="editPaidBy_${escapeHtml(id)}"
+                    value="Булат и Динара"
+                    ${data.paid_by === "Булат и Динара" ? "checked" : ""}
+                >
+
+                <span class="pay-button">
+                    Булат и Динара
+                </span>
+
+            </label>
+
+
+            <label>
+
+                <input
+                    type="radio"
+                    name="editPaidBy_${escapeHtml(id)}"
+                    value="Эмиль"
+                    ${data.paid_by === "Эмиль" ? "checked" : ""}
+                >
+
+                <span class="pay-button">
+                    Эмиль
+                </span>
+
+            </label>
+
+        </div>
+
+
+        <label>
+            Сумма
+        </label>
+
+        <input
+            type="number"
+            class="edit-amount"
+            step="0.01"
+            min="0"
+            value="${escapeHtml(data.amount)}"
+        >
+
+
+        <div class="form-row">
+
+            <div>
+
+                <label>
+                    Валюта
+                </label>
+
+                <select class="edit-currency">
+
+                    <option
+                        value="GEL"
+                        ${currency === "GEL" ? "selected" : ""}
+                    >
+                        ₾ Лари
+                    </option>
+
+                    <option
+                        value="RUB"
+                        ${currency === "RUB" ? "selected" : ""}
+                    >
+                        ₽ Рубли
+                    </option>
+
+                    <option
+                        value="USD"
+                        ${currency === "USD" ? "selected" : ""}
+                    >
+                        $ Доллары
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div>
+
+                <label>
+                    Дата
+                </label>
+
+                <input
+                    type="date"
+                    class="edit-date"
+                    value="${escapeHtml(data.date || "")}"
+                >
+
+            </div>
+
+        </div>
+
+
+        <label>
+            Что купили
+        </label>
+
+        <input
+            type="text"
+            class="edit-description"
+            value="${escapeHtml(data.description || "")}"
+        >
+
+
+        <div class="participants-header">
+
+            <label>
+                За кого
+            </label>
+
+            <button
+                type="button"
+                class="all-participants-button"
+            >
+                За всех
+            </button>
+
+        </div>
+
+
+        <div class="people">
+
+            ${
+                PEOPLE.map(
+                    person => `
+
+                        <label class="person">
+
+                            <input
+                                type="checkbox"
+                                class="participant"
+                                value="${escapeHtml(person)}"
+                                ${
+                                    participants.includes(person)
+                                    ?
+                                    "checked"
+                                    :
+                                    ""
+                                }
+                            >
+
+                            <span>
+                                ${escapeHtml(person)}
+                            </span>
+
+                        </label>
+
+                    `
+                ).join("")
             }
-        ).join("");
+
+        </div>
+
+
+        <div class="edit-actions">
+
+            <button
+                type="button"
+                class="save-edit-button"
+            >
+                ✓ Сохранить
+            </button>
+
+
+            <button
+                type="button"
+                class="cancel-edit-button"
+            >
+                Отмена
+            </button>
+
+        </div>
+
+    `;
+
+
+    expenseElement.appendChild(
+        form
+    );
+
+
+    const allButton =
+        form.querySelector(
+            ".all-participants-button"
+        );
+
+
+    allButton.addEventListener(
+        "click",
+        () => {
+
+            toggleAllParticipants(
+                form
+            );
+
+        }
+    );
+
+
+    form.querySelectorAll(
+        ".participant"
+    ).forEach(
+        checkbox => {
+
+            checkbox.addEventListener(
+                "change",
+                () => {
+
+                    updateAllParticipantsButton(
+                        form
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+    updateAllParticipantsButton(
+        form
+    );
+
+
+    form.querySelector(
+        ".cancel-edit-button"
+    ).addEventListener(
+        "click",
+        () => {
+
+            form.remove();
+
+        }
+    );
+
+
+    form.querySelector(
+        ".save-edit-button"
+    ).addEventListener(
+        "click",
+        () => {
+
+            saveEditedExpense(
+                id,
+                form
+            );
+
+        }
+    );
+
+
+    form.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest"
+    });
+
+}
+
+
+/* =========================================================
+   SAVE EDIT
+========================================================= */
+
+async function saveEditedExpense(
+    id,
+    form
+) {
+
+    const saveButton =
+        form.querySelector(
+            ".save-edit-button"
+        );
+
+
+    const paidBy =
+        form.querySelector(
+            'input[type="radio"]:checked'
+        );
+
+
+    const amount =
+        Number(
+            form.querySelector(
+                ".edit-amount"
+            ).value
+        );
+
+
+    const currency =
+        form.querySelector(
+            ".edit-currency"
+        ).value;
+
+
+    const date =
+        form.querySelector(
+            ".edit-date"
+        ).value;
+
+
+    const description =
+        form.querySelector(
+            ".edit-description"
+        ).value.trim();
+
+
+    const participants =
+        getSelectedParticipants(
+            form
+        );
+
+
+    if (!paidBy) {
+
+        alert(
+            "Выбери, кто заплатил."
+        );
+
+        return;
+
+    }
+
+
+    if (
+        !Number.isFinite(amount) ||
+        amount <= 0
+    ) {
+
+        alert(
+            "Укажи корректную сумму."
+        );
+
+        return;
+
+    }
+
+
+    if (
+        !isValidCurrency(currency)
+    ) {
+
+        alert(
+            "Выбери корректную валюту."
+        );
+
+        return;
+
+    }
+
+
+    if (
+        participants.length === 0
+    ) {
+
+        alert(
+            "Выбери, за кого заплатили."
+        );
+
+        return;
+
+    }
+
+
+    saveButton.disabled =
+        true;
+
+    saveButton.innerText =
+        "Сохраняю...";
+
+
+    const updatedRow = {
+
+        paid_by:
+            paidBy.value,
+
+        amount:
+            roundMoney(
+                amount
+            ),
+
+        currency:
+            currency,
+
+        description:
+            description ||
+            "Расход",
+
+        participants:
+            participants,
+
+        date:
+            date ||
+            getLocalDate()
+
+    };
+
+
+    const {
+        error
+    } =
+        await supabaseClient
+
+            .from("expenses1")
+
+            .update(
+                updatedRow
+            )
+
+            .eq(
+                "id",
+                id
+            );
+
+
+    if (error) {
+
+        console.error(
+            "Ошибка обновления:",
+            error
+        );
+
+
+        alert(
+            "Не удалось сохранить изменения:\n\n"
+            +
+            error.message
+        );
+
+
+        saveButton.disabled =
+            false;
+
+        saveButton.innerText =
+            "✓ Сохранить";
+
+        return;
+
+    }
+
+
+    await loadExpenses();
+
+}
+
+
+/* =========================================================
+   DELETE SINGLE EXPENSE
+========================================================= */
+
+async function deleteExpense(id) {
+
+    const expenseElement =
+        document.querySelector(
+            `.expense[data-expense-id="${CSS.escape(String(id))}"]`
+        );
+
+
+    if (!expenseElement) {
+
+        return;
+
+    }
+
+
+    const description =
+        expenseElement.querySelector(
+            ".expense-desc"
+        )?.innerText ||
+        "этот расход";
+
+
+    const confirmed =
+        confirm(
+            "Удалить расход?\n\n"
+            +
+            description
+            +
+            "\n\n"
+            +
+            "Он будет удалён из общей базы, "
+            +
+            "а расчёты автоматически пересчитаются."
+        );
+
+
+    if (!confirmed) {
+
+        return;
+
+    }
+
+
+    const deleteButton =
+        expenseElement.querySelector(
+            ".delete-expense-button"
+        );
+
+
+    deleteButton.disabled =
+        true;
+
+    deleteButton.innerText =
+        "Удаляю...";
+
+
+    const {
+        error
+    } =
+        await supabaseClient
+
+            .from("expenses1")
+
+            .delete()
+
+            .eq(
+                "id",
+                id
+            );
+
+
+    if (error) {
+
+        console.error(
+            "Ошибка удаления:",
+            error
+        );
+
+
+        alert(
+            "Не удалось удалить расход:\n\n"
+            +
+            error.message
+        );
+
+
+        deleteButton.disabled =
+            false;
+
+        deleteButton.innerText =
+            "🗑️ Удалить";
+
+        return;
+
+    }
+
+
+    await loadExpenses();
 
 }
 
@@ -1820,7 +2804,7 @@ function createBalances() {
 
 
 /* =========================================================
-   CALCULATE
+   CALCULATE DEBTS
 ========================================================= */
 
 function calculateDebts(data) {
@@ -1840,7 +2824,8 @@ function calculateDebts(data) {
 
 
     for (
-        const expense of data
+        const expense
+        of data
     ) {
 
         const amount =
@@ -2274,22 +3259,9 @@ async function addExpense() {
 
 
     const participants =
-        [
-            ...new Set(
-
-                Array.from(
-
-                    document.querySelectorAll(
-                        ".participant:checked"
-                    )
-
-                ).map(
-                    checkbox =>
-                        checkbox.value
-                )
-
-            )
-        ];
+        getSelectedParticipants(
+            document
+        );
 
 
     if (!paidByElement) {
@@ -2317,10 +3289,7 @@ async function addExpense() {
 
 
     if (
-        !Number.isFinite(
-            amount
-        )
-        ||
+        !Number.isFinite(amount) ||
         amount <= 0
     ) {
 
@@ -2333,9 +3302,7 @@ async function addExpense() {
 
 
     if (
-        !isValidCurrency(
-            currency
-        )
+        !isValidCurrency(currency)
     ) {
 
         message.innerText =
@@ -2358,27 +3325,6 @@ async function addExpense() {
     }
 
 
-    const invalidParticipant =
-        participants.find(
-            person =>
-                !getPair(
-                    person
-                )
-        );
-
-
-    if (
-        invalidParticipant
-    ) {
-
-        message.innerText =
-            "Обнаружен неизвестный участник";
-
-        return;
-
-    }
-
-
     button.disabled =
         true;
 
@@ -2387,14 +3333,10 @@ async function addExpense() {
         "Сохраняю...";
 
 
-    const databasePayer =
-        paidByElement.value;
-
-
     const row = {
 
         paid_by:
-            databasePayer,
+            paidByElement.value,
 
         amount:
             roundMoney(
@@ -2423,9 +3365,7 @@ async function addExpense() {
     } =
         await supabaseClient
 
-            .from(
-                "expenses1"
-            )
+            .from("expenses1")
 
             .insert([
                 row
@@ -2435,6 +3375,7 @@ async function addExpense() {
     if (error) {
 
         console.error(
+            "Ошибка добавления:",
             error
         );
 
@@ -2447,7 +3388,6 @@ async function addExpense() {
 
         button.disabled =
             false;
-
 
         return;
 
@@ -2471,22 +3411,30 @@ async function addExpense() {
     document.querySelectorAll(
         ".participant"
     ).forEach(
-        checkbox =>
+        checkbox => {
+
             checkbox.checked =
-                false
+                false;
+
+        }
     );
 
 
     document.querySelectorAll(
         'input[name="paidBy"]'
     ).forEach(
-        radio =>
+        radio => {
+
             radio.checked =
-                false
+                false;
+
+        }
     );
 
 
-    updateAllParticipantsButton();
+    updateAllParticipantsButton(
+        document
+    );
 
 
     button.disabled =
@@ -2494,49 +3442,6 @@ async function addExpense() {
 
 
     await loadExpenses();
-
-}
-
-
-/* =========================================================
-   LOCAL DATE
-========================================================= */
-
-function getLocalDate() {
-
-    const now =
-        new Date();
-
-
-    const year =
-        now.getFullYear();
-
-
-    const month =
-        String(
-            now.getMonth() + 1
-        ).padStart(
-            2,
-            "0"
-        );
-
-
-    const day =
-        String(
-            now.getDate()
-        ).padStart(
-            2,
-            "0"
-        );
-
-
-    return (
-        year +
-        "-" +
-        month +
-        "-" +
-        day
-    );
 
 }
 
@@ -2592,9 +3497,7 @@ async function resetAllExpenses() {
     } =
         await supabaseClient
 
-            .from(
-                "expenses1"
-            )
+            .from("expenses1")
 
             .delete()
 
@@ -2626,8 +3529,7 @@ async function resetAllExpenses() {
 
             <br><br>
 
-            Проверь, что SQL-политика
-            DELETE была добавлена
+            Проверь политику DELETE
             в Supabase.
 
         `;
@@ -2635,7 +3537,6 @@ async function resetAllExpenses() {
 
         deleteButton.disabled =
             false;
-
 
         return;
 
@@ -2678,7 +3579,7 @@ async function resetAllExpenses() {
 
 
 /* =========================================================
-   START
+   INITIAL EVENTS
 ========================================================= */
 
 document.getElementById(
@@ -2687,9 +3588,79 @@ document.getElementById(
     getLocalDate();
 
 
+document.getElementById(
+    "addButton"
+).addEventListener(
+    "click",
+    addExpense
+);
+
+
+document.getElementById(
+    "allParticipantsButton"
+).addEventListener(
+    "click",
+    () => {
+
+        toggleAllParticipants(
+            document
+        );
+
+    }
+);
+
+
+document.querySelectorAll(
+    ".participant"
+).forEach(
+    checkbox => {
+
+        checkbox.addEventListener(
+            "change",
+            () => {
+
+                updateAllParticipantsButton(
+                    document
+                );
+
+            }
+        );
+
+    }
+);
+
+
+document.getElementById(
+    "resetButton"
+).addEventListener(
+    "click",
+    showResetConfirmation
+);
+
+
+document.getElementById(
+    "cancelResetButton"
+).addEventListener(
+    "click",
+    cancelReset
+);
+
+
+document.getElementById(
+    "confirmDeleteButton"
+).addEventListener(
+    "click",
+    resetAllExpenses
+);
+
+
+/* =========================================================
+   START
+========================================================= */
+
 loadExpenses();
 
 </script>
 
 </body>
-</html>
+   </html>
